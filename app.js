@@ -2,11 +2,13 @@ let express = require("express");
 let config = require("./config/local.json");
 let port = config.server.port;
 let albumsRouter = require("./routes/albums");
+let songsRouter = require("./routes/songs");
 let bodyParser = require("body-parser");
 
 let app = express();
 
 app.use("/albums", albumsRouter);
+app.use("/songs", songsRouter);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());

@@ -1,8 +1,6 @@
 let express = require("express");
 let router = express.Router();
-let connectionString = require("../config/database");
-let pgp = require("pg-promise")();
-let db = pgp(connectionString);
+let db = require("../config/db");
 let sendResult = require("../helpers/sendResult");
 
 /* GET all albums */
