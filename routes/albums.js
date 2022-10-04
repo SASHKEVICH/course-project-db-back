@@ -3,7 +3,7 @@ let router = express.Router();
 let connectionString = require("../config/database");
 let pgp = require("pg-promise")();
 let db = pgp(connectionString);
-let jsonParser = require("body-parser").json();
+let sendResult = require("../helpers/sendResult");
 
 /* GET all albums */
 router.get("/", async (req, res, next) => {
@@ -16,10 +16,7 @@ router.get("/", async (req, res, next) => {
 
 	try {
 		const albums = await db.any(sqlQuery);
-		res.json({
-			message: "success",
-			data: albums,
-		});
+		sendResult(res, albums);
 	} catch (err) {
 		res.status(400).json({ error: err.message });
 	}
@@ -39,10 +36,7 @@ router.get("/:title", async (req, res, next) => {
 
 	try {
 		const album = await db.any(sqlQuery, title);
-		res.json({
-			message: "success",
-			data: album,
-		});
+		sendResult(res, album);
 	} catch (err) {
 		res.status(400).json({ error: err.message });
 	}
@@ -76,10 +70,7 @@ router.get("/:title&:band/songs", async (req, res, next) => {
 		const albumId = albums.map((e) => e.album_id)[0];
 		const songs = await db.any(selectSongs, albumId);
 
-		res.json({
-			message: "success",
-			data: songs,
-		});
+		sendResult(res, songs);
 	} catch (err) {
 		res.status(400).json({ error: err.message });
 	}
