@@ -46,8 +46,9 @@ router.get("/:id", async (req, res, next) => {
 	const sqlQuery = `
 		SELECT album.*, band.title AS band
 		FROM album
-		LEFT JOIN "album/band" alband ON alband.album_id = $1
+		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
 		LEFT JOIN band ON band.band_id = alband.band_id
+		WHERE album.album_id = $1
 	`;
 
 	try {

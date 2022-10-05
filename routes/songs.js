@@ -20,7 +20,7 @@ router.get("/album=:title&band=:band", async (req, res, next) => {
 	const selectSongs = `
 		SELECT song.song_id, song.title AS song, album.title AS album
 		FROM album
-		LEFT JOIN "album/song" alsong ON alsong.album_id = $1
+		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
 		LEFT JOIN song ON song.song_id = alsong.song_id
 		WHERE album.album_id = $1
 		ORDER BY alsong.order ASC
@@ -43,7 +43,7 @@ router.get("/albumId=:album_id", async (req, res, next) => {
 	const selectSongs = `
 		SELECT song.song_id, song.title AS song, album.title AS album
 		FROM album
-		LEFT JOIN "album/song" alsong ON alsong.album_id = $1
+		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
 		LEFT JOIN song ON song.song_id = alsong.song_id
 		WHERE album.album_id = $1
 		ORDER BY alsong.order ASC
