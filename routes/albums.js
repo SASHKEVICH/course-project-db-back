@@ -1,6 +1,6 @@
 let express = require("express");
 let router = express.Router();
-let db = require("../config/db");
+let db = require("../database/db");
 let sendJson = require("../helpers/sendJson");
 
 /* GET all albums */

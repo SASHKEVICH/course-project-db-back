@@ -1,12 +1,13 @@
-let express = require("express");
-let config = require("./config/local.json");
-let port = config.server.port;
+const express = require("express");
+require("dotenv").config();
+const port = process.env.PORT;
+
 let albumsRouter = require("./routes/albums");
 let songsRouter = require("./routes/songs");
 let bandsRouter = require("./routes/bands");
 let bodyParser = require("body-parser");
 
-let app = express();
+const app = express();
 
 app.use("/albums", albumsRouter);
 app.use("/songs", songsRouter);
