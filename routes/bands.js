@@ -1,7 +1,7 @@
-let express = require("express");
-let router = express.Router();
-let db = require("../database/db");
-let sendJson = require("../helpers/sendJson");
+const express = require("express");
+const router = express.Router();
+const sendResult = require("../helpers/sendResult");
+const selectInfo = require("../helpers/selectInfo");
 
 /* GET band by id */
 router.get("/:id", async (req, res, next) => {
@@ -12,7 +12,8 @@ router.get("/:id", async (req, res, next) => {
 		WHERE band_id = $1
 	`;
 
-	selectInfoWith(res, sqlQuery, id);
+	const band = await selectInfo(sqlQuery, id);
+	sendResult(res, band);
 });
 
 /* GET band's history by id */
@@ -24,7 +25,8 @@ router.get("/:id/history", async (req, res, next) => {
 		WHERE band_id = $1
 	`;
 
-	selectInfoWith(res, sqlQuery, id);
+	const history = await selectInfo(sqlQuery, id);
+	sendResult(res, history);
 });
 
 /* GET band's discography by id */
@@ -40,16 +42,8 @@ router.get("/:id/discography", async (req, res, next) => {
 		ORDER BY alband.order ASC
 	`;
 
-	selectInfoWith(res, sqlQuery, id);
+	const discography = await selectInfo(sqlQuery, id);
+	sendResult(res, discography);
 });
-
-const selectInfoWith = async (res, sqlQuery, param) => {
-	try {
-		const band = await db.any(sqlQuery, param);
-		sendJson(res, band);
-	} catch (err) {
-		res.status(400).json({ error: err.message });
-	}
-};
 
 module.exports = router;

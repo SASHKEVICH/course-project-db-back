@@ -1,7 +1,7 @@
 let express = require("express");
 let router = express.Router();
-let db = require("../database/db");
-let sendJson = require("../helpers/sendJson");
+const sendResult = require("../helpers/sendResult");
+const selectInfo = require("../helpers/selectInfo");
 
 /* GET all albums */
 router.get("/", async (req, res, next) => {
@@ -12,12 +12,8 @@ router.get("/", async (req, res, next) => {
 		LEFT JOIN band ON band.band_id = alband.band_id
 	`;
 
-	try {
-		const albums = await db.any(sqlQuery);
-		sendJson(res, albums);
-	} catch (err) {
-		res.status(400).json({ error: err.message });
-	}
+	const albums = await selectInfo(sqlQuery, []);
+	sendResult(res, albums);
 });
 
 /* GET album by title */
@@ -32,12 +28,8 @@ router.get("/title=:title", async (req, res, next) => {
 		WHERE strpos(lower(album.title), lower($1)) > 0
 	`;
 
-	try {
-		const album = await db.any(sqlQuery, title);
-		sendJson(res, album);
-	} catch (err) {
-		res.status(400).json({ error: err.message });
-	}
+	const album = await selectInfo(sqlQuery, title);
+	sendResult(res, album);
 });
 
 /* GET album by id */
@@ -51,12 +43,8 @@ router.get("/:id", async (req, res, next) => {
 		WHERE album.album_id = $1
 	`;
 
-	try {
-		const album = await db.any(sqlQuery, id);
-		sendJson(res, album);
-	} catch (err) {
-		res.status(400).json({ error: err.message });
-	}
+	const album = await selectInfo(sqlQuery, id);
+	sendResult(res, album);
 });
 
 module.exports = router;

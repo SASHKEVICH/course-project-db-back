@@ -1,7 +1,7 @@
 let express = require("express");
 let router = express.Router();
-let db = require("../database/db");
-let sendJson = require("../helpers/sendJson");
+const sendResult = require("../helpers/sendResult");
+const selectInfo = require("../helpers/selectInfo");
 
 /* GET songs in album by title and band*/
 router.get("/album=:title&band=:band", async (req, res, next) => {
@@ -26,14 +26,10 @@ router.get("/album=:title&band=:band", async (req, res, next) => {
 		ORDER BY alsong.order ASC
 	`;
 
-	try {
-		const albums = await db.any(selectAlbumId, [album, band]);
-		const albumId = albums.map((e) => e.album_id)[0];
-		const songs = await db.any(selectSongs, albumId);
-		sendJson(res, songs);
-	} catch (err) {
-		res.status(400).json({ error: err.message });
-	}
+	const albums = await selectInfo(selectAlbumId, [album, band]);
+	const albumId = albums.info.map((e) => e.album_id)[0];
+	const songs = await selectInfo(selectSongs, albumId);
+	sendResult(res, songs);
 });
 
 /* GET songs in album by id*/
@@ -49,12 +45,8 @@ router.get("/albumId=:album_id", async (req, res, next) => {
 		ORDER BY alsong.order ASC
 	`;
 
-	try {
-		const songs = await db.any(selectSongs, albumId);
-		sendJson(res, songs);
-	} catch (err) {
-		res.status(400).json({ error: err.message });
-	}
+	const songs = await selectInfo(selectSongs, albumId);
+	sendResult(res, songs);
 });
 
 module.exports = router;
