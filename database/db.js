@@ -1,7 +1,6 @@
 require("dotenv").config();
-let cn = process.env.DB_CS;
-
-let pgp = require("pg-promise")();
-let db = pgp(cn);
+const cn = process.env.DB_CS;
+const pgp = require("pg-promise")();
+const db = pgp(cn);
 
 module.exports = db;

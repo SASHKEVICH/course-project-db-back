@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model album {
+  album_id         Int           @id(map: "pkey_album_id") @default(autoincrement())
+  title            String?       @db.VarChar(30)
+  album_cover_path String?
+  released         DateTime?     @db.Date
+  explicit         Boolean       @default(false)
+  history          String?
+  type             Int?
+  album_type       album_type?   @relation(fields: [type], references: [album_type_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_album_type")
+  album_band       album_band[]
+  album_song       album_song[]
+  genre_album      genre_album[]
+}
+
+model album_band {
+  id       Int    @id @default(autoincrement())
+  album_id Int?
+  band_id  Int?
+  order    Int?
+  album    album? @relation(fields: [album_id], references: [album_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_album_id")
+  band     band?  @relation(fields: [band_id], references: [band_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_band_id")
+
+  @@map("album/band")
+}
+
+model album_song {
+  id       Int    @id @default(autoincrement())
+  album_id Int?
+  song_id  Int?
+  order    Int?
+  album    album? @relation(fields: [album_id], references: [album_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_album_id")
+  song     song?  @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_song_id")
+
+  @@map("album/song")
+}
+
+model album_type {
+  album_type_id Int     @id @default(autoincrement())
+  type          String? @db.VarChar(30)
+  album         album[]
+}
+
+model band {
+  band_id           Int                 @id
+  title             String              @db.VarChar(40)
+  history           String?
+  origin_city       String?             @db.VarChar(30)
+  photo_path        String?
+  founded           String?             @db.VarChar(30)
+  ended             String?             @db.VarChar(30)
+  country           String?             @db.VarChar(40)
+  album_band        album_band[]
+  genre_band        genre_band[]
+  member_band       member_band[]
+  social_media_band social_media_band[]
+}
+
+model genre {
+  genre_id    Int           @id @default(autoincrement())
+  name        String?       @db.VarChar(20)
+  genre_album genre_album[]
+  genre_band  genre_band[]
+  genre_song  genre_song[]
+}
+
+model genre_album {
+  id       Int    @id(map: "pkey_genre/album") @default(autoincrement())
+  album_id Int?
+  genre_id Int?
+  album    album? @relation(fields: [album_id], references: [album_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_album_id")
+  genre    genre? @relation(fields: [genre_id], references: [genre_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_genre_id")
+
+  @@map("genre/album")
+}
+
+model genre_band {
+  id       Int    @id @default(autoincrement())
+  genre_id Int?
+  band_id  Int?
+  band     band?  @relation(fields: [band_id], references: [band_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_band_id")
+  genre    genre? @relation(fields: [genre_id], references: [genre_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_genre_id")
+
+  @@map("genre/band")
+}
+
+model genre_song {
+  id       Int    @id @default(autoincrement())
+  genre_id Int?
+  song_id  Int?
+  genre    genre? @relation(fields: [genre_id], references: [genre_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_genre_id")
+  song     song?  @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_song_id")
+
+  @@map("genre/song")
+}
+
+model member {
+  member_id           Int                   @id @default(autoincrement())
+  name                String?               @db.VarChar(50)
+  biography           String?
+  birth_date          DateTime?             @db.Date
+  die_date            DateTime?             @db.Date
+  origin_city         String?               @db.VarChar(40)
+  member_band         member_band[]
+  social_media_member social_media_member[]
+}
+
+model member_band {
+  previous  Boolean?
+  id        Int      @id @default(autoincrement())
+  band_id   Int?
+  member_id Int?
+  band      band?    @relation(fields: [band_id], references: [band_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_band_id")
+  member    member?  @relation(fields: [member_id], references: [member_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_member_id")
+
+  @@map("member/band")
+}
+
+model social_media {
+  social_media_id     Int                   @id @default(autoincrement())
+  link                String?
+  type                Int?
+  social_media_type   social_media_type?    @relation(fields: [type], references: [social_media_type_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_social_media_type")
+  social_media_band   social_media_band[]
+  social_media_member social_media_member[]
+}
+
+model social_media_band {
+  id              Int           @id @default(autoincrement())
+  social_media_id Int?
+  band_id         Int?
+  band            band?         @relation(fields: [band_id], references: [band_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_band_id")
+  social_media    social_media? @relation(fields: [social_media_id], references: [social_media_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_social_media_id")
+
+  @@map("social_media/band")
+}
+
+model social_media_member {
+  id              Int           @id @default(autoincrement())
+  member_id       Int?
+  social_media_id Int?
+  member          member?       @relation(fields: [member_id], references: [member_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_member_id")
+  social_media    social_media? @relation(fields: [social_media_id], references: [social_media_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_social_media_id")
+
+  @@map("social_media/member")
+}
+
+model social_media_type {
+  social_media_type_id Int            @id @default(autoincrement())
+  type                 String?        @db.VarChar(30)
+  social_media         social_media[]
+}
+
+model song {
+  song_id    Int          @id @default(autoincrement())
+  title      String?      @db.VarChar(60)
+  explicit   Boolean      @default(false)
+  duration   String?      @db.VarChar(20)
+  album_song album_song[]
+  genre_song genre_song[]
+}
