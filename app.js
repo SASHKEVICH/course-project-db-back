@@ -1,10 +1,10 @@
 const express = require("express");
-require("dotenv").config();
 const port = process.env.PORT;
 
 let albumsRouter = require("./routes/albums");
 let songsRouter = require("./routes/songs");
 let bandsRouter = require("./routes/bands");
+let genresRouter = require("./routes/genres");
 let bodyParser = require("body-parser");
 
 const app = express();
@@ -12,6 +12,7 @@ const app = express();
 app.use("/albums", albumsRouter);
 app.use("/songs", songsRouter);
 app.use("/bands", bandsRouter);
+app.use("/genres", genresRouter);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -33,5 +34,5 @@ app.use(function (err, req, res, next) {
 });
 
 app.listen(port, () => {
-	console.log(`Example app listening on port ${port}`);
+	console.log(`App listening on port ${port}`);
 });
