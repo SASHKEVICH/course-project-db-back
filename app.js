@@ -5,6 +5,9 @@ let albumsRouter = require("./routes/albums");
 let songsRouter = require("./routes/songs");
 let bandsRouter = require("./routes/bands");
 let genresRouter = require("./routes/genres");
+let socialMediaRouter = require("./routes/socialMedias");
+let membersRouter = require("./routes/members");
+
 let bodyParser = require("body-parser");
 
 const app = express();
@@ -13,6 +16,8 @@ app.use("/albums", albumsRouter);
 app.use("/songs", songsRouter);
 app.use("/bands", bandsRouter);
 app.use("/genres", genresRouter);
+app.use("/social_media", socialMediaRouter);
+app.use("/members", membersRouter);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
