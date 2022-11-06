@@ -1,12 +1,12 @@
-const db = require("../database/db");
+import db from "../database/db.js";
 
 const selectInfo = async (sqlQuery, params) => {
 	try {
-		const info = await db.any(sqlQuery, params);
+		const info = await db(sqlQuery, params);
 		return { message: "success", info: info };
 	} catch (err) {
 		return { message: "failure", error: err.message };
 	}
 };
 
-module.exports = selectInfo;
+export default selectInfo;

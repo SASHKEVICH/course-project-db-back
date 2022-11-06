@@ -1,7 +1,7 @@
-const express = require("express");
-const router = express.Router();
-const sendResult = require("../helpers/sendResult");
-const selectInfo = require("../helpers/selectInfo");
+import { Router } from "express";
+const router = Router();
+import sendResult from "../helpers/sendResult.js";
+import selectInfo from "../helpers/selectInfo.js";
 
 /* GET band by id */
 router.get("/:id", async (req, res, next) => {
@@ -46,4 +46,4 @@ router.get("/:id/discography", async (req, res, next) => {
 	sendResult(res, discography);
 });
 
-module.exports = router;
+export default router;

@@ -1,6 +1,6 @@
-let express = require("express");
-let router = express.Router();
-let db = require("../database/db");
-let sendResult = require("../helpers/sendResult");
+import { Router } from "express";
+let router = Router();
+import db from "../database/db";
+import sendResult from "../helpers/sendResult";
 
-module.exports = router;
+export default router;

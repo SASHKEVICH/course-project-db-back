@@ -1,7 +1,7 @@
-const express = require("express");
-const router = express.Router();
-const sendResult = require("../helpers/sendResult");
-const selectInfo = require("../helpers/selectInfo");
+import { Router } from "express";
+const router = Router();
+import sendResult from "../helpers/sendResult.js";
+import selectInfo from "../helpers/selectInfo.js";
 
 /* GET genres of album */
 router.get("/album=:id", async (req, res, next) => {
@@ -43,4 +43,4 @@ const convertGenresToList = (genres) => {
 	genres.info = genresList;
 };
 
-module.exports = router;
+export default router;

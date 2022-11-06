@@ -4,4 +4,4 @@ const sendResult = (res, data) => {
 	});
 };
 
-module.exports = sendResult;
+export default sendResult;

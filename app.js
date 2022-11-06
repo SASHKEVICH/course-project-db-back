@@ -1,14 +1,15 @@
-const express = require("express");
+import express from "express";
 const port = process.env.PORT;
 
-let albumsRouter = require("./routes/albums");
-let songsRouter = require("./routes/songs");
-let bandsRouter = require("./routes/bands");
-let genresRouter = require("./routes/genres");
-let socialMediaRouter = require("./routes/socialMedias");
-let membersRouter = require("./routes/members");
+import albumsRouter from "./routes/albums.js";
+import songsRouter from "./routes/songs.js";
+import bandsRouter from "./routes/bands.js";
+import genresRouter from "./routes/genres.js";
+import socialMediaRouter from "./routes/socialMedias.js";
+import membersRouter from "./routes/members.js";
 
-let bodyParser = require("body-parser");
+import pkg from "body-parser";
+const { urlencoded, json } = pkg;
 
 const app = express();
 
@@ -19,8 +20,8 @@ app.use("/genres", genresRouter);
 app.use("/social_media", socialMediaRouter);
 app.use("/members", membersRouter);
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(urlencoded({ extended: false }));
+app.use(json());
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

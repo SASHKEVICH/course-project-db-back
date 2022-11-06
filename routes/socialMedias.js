@@ -1,7 +1,7 @@
-const express = require("express");
-const router = express.Router();
-const sendResult = require("../helpers/sendResult");
-const selectInfo = require("../helpers/selectInfo");
+import { Router } from "express";
+const router = Router();
+import sendResult from "../helpers/sendResult.js";
+import selectInfo from "../helpers/selectInfo.js";
 
 /* GET social_medias of band */
 router.get("/band=:id", async (req, res, next) => {
@@ -35,4 +35,4 @@ router.get("/member=:id", async (req, res, next) => {
 	sendResult(res, medias);
 });
 
-module.exports = router;
+export default router;
