@@ -5,15 +5,11 @@ version: '3'
 tasks:
   dev_debug: 
     cmds:
-      - npx nodemon --inspect -r dotenv/config ./app.js
+      - npx nodemon -r dotenv/config ./src/app.ts
     silent: true
 
-  dev_start:
-    cmds:
-      - npx nodemon -r dotenv/config ./app.js
-    silent: true
-  
   prod_start:
     cmds:
-      - node -r dotenv/config app.js
+      - npx tsc
+      - node -r dotenv/config ./build/app.js
     silent: true
