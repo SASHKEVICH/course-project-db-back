@@ -1,7 +1,8 @@
 import { Router } from "express";
+import sendResult from "../helpers/sendResult";
+import selectInfo from "../helpers/selectInfo";
+
 const router = Router();
-import sendResult from "../helpers/sendResult.js";
-import selectInfo from "../helpers/selectInfo.js";
 
 /* GET genres of album */
 router.get("/album=:id", async (req, res, next) => {
@@ -35,9 +36,9 @@ router.get("/band=:id", async (req, res, next) => {
 	sendResult(res, genres);
 });
 
-const convertGenresToList = (genres) => {
-	const genresList = [];
-	genres.info.forEach((e) => {
+const convertGenresToList = (genres: any) => {
+	const genresList: Array<string> = [];
+	genres.info.forEach((e: any) => {
 		genresList.push(e.genre);
 	});
 	genres.info = genresList;

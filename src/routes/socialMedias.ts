@@ -1,7 +1,8 @@
 import { Router } from "express";
+import sendResult from "../helpers/sendResult";
+import selectInfo from "../helpers/selectInfo";
+
 const router = Router();
-import sendResult from "../helpers/sendResult.js";
-import selectInfo from "../helpers/selectInfo.js";
 
 /* GET social_medias of band */
 router.get("/band=:id", async (req, res, next) => {
