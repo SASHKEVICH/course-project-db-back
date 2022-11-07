@@ -1,7 +1,8 @@
 import { Router } from "express";
+import sendResult from "../helpers/sendResult";
+import selectInfo from "../helpers/selectInfo";
+
 const router = Router();
-import sendResult from "../helpers/sendResult.js";
-import selectInfo from "../helpers/selectInfo.js";
 
 /* GET band by id */
 router.get("/:id", async (req, res, next) => {
@@ -12,7 +13,7 @@ router.get("/:id", async (req, res, next) => {
 		WHERE band_id = $1
 	`;
 
-	const band = await selectInfo(sqlQuery, id);
+	const band = await selectInfo(sqlQuery, [id]);
 	sendResult(res, band);
 });
 
@@ -25,7 +26,7 @@ router.get("/:id/history", async (req, res, next) => {
 		WHERE band_id = $1
 	`;
 
-	const history = await selectInfo(sqlQuery, id);
+	const history = await selectInfo(sqlQuery, [id]);
 	sendResult(res, history);
 });
 
@@ -42,7 +43,7 @@ router.get("/:id/discography", async (req, res, next) => {
 		ORDER BY alband.order ASC
 	`;
 
-	const discography = await selectInfo(sqlQuery, id);
+	const discography = await selectInfo(sqlQuery, [id]);
 	sendResult(res, discography);
 });
 

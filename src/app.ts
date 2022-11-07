@@ -1,17 +1,17 @@
-import express from "express";
+import express, { Express, Request, Response } from "express";
 const port = process.env.PORT;
 
-import albumsRouter from "./routes/albums.js";
-import songsRouter from "./routes/songs.js";
-import bandsRouter from "./routes/bands.js";
-import genresRouter from "./routes/genres.js";
-import socialMediaRouter from "./routes/socialMedias.js";
-import membersRouter from "./routes/members.js";
+import albumsRouter from "./routes/albums"
+import songsRouter from "./routes/songs"
+import bandsRouter from "./routes/bands"
+import genresRouter from "./routes/genres"
+import socialMediaRouter from "./routes/socialMedias"
+import membersRouter from "./routes/members"
 
 import pkg from "body-parser";
 const { urlencoded, json } = pkg;
 
-const app = express();
+const app: Express = express();
 
 app.use("/albums", albumsRouter);
 app.use("/songs", songsRouter);
@@ -25,11 +25,11 @@ app.use(json());
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-	next(createError(404));
+	next();
 });
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use(function (err: any, req: Request, res: Response) {
 	// set locals, only providing error in development
 	res.locals.message = err.message;
 	res.locals.error = req.app.get("env") === "development" ? err : {};

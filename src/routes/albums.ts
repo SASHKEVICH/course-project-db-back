@@ -1,6 +1,6 @@
 import { Router } from "express";
-import sendResult from "../helpers/sendResult.js";
-import selectInfo from "../helpers/selectInfo.js";
+import sendResult from "../helpers/sendResult";
+import selectInfo from "../helpers/selectInfo";
 
 const router = Router();
 
@@ -13,13 +13,13 @@ router.get("/", async (req, res, next) => {
 		LEFT JOIN band ON band.band_id = alband.band_id
 	`;
 
-	const albums = await selectInfo(sqlQuery, []);
+	const albums = await selectInfo(sqlQuery, [""]);
 	sendResult(res, albums);
 });
 
 /* GET album by title */
 router.get("/title=:title", async (req, res, next) => {
-	let title = req.params.title.replace(/-/g, " ");
+	const title: string = req.params.title.replace(/-/g, " ");
 
 	let sqlQuery = `
 		SELECT album.*, band.title AS band
@@ -29,7 +29,7 @@ router.get("/title=:title", async (req, res, next) => {
 		WHERE strpos(lower(album.title), lower($1)) > 0
 	`;
 
-	const album = await selectInfo(sqlQuery, title);
+	const album = await selectInfo(sqlQuery, [title]);
 	sendResult(res, album);
 });
 
@@ -44,7 +44,7 @@ router.get("/:id", async (req, res, next) => {
 		WHERE album.album_id = $1
 	`;
 
-	const album = await selectInfo(sqlQuery, id);
+	const album = await selectInfo(sqlQuery, [id]);
 	sendResult(res, album);
 });
 

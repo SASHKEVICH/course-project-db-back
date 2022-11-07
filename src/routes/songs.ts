@@ -1,12 +1,13 @@
 import { Router } from "express";
+import sendResult from "../helpers/sendResult";
+import selectInfo from "../helpers/selectInfo";
+
 const router = Router();
-import sendResult from "../helpers/sendResult.js";
-import selectInfo from "../helpers/selectInfo.js";
 
 /* GET songs in album by title and band*/
 router.get("/album=:title&band=:band", async (req, res, next) => {
-	const album = req.params.title.replace(/-/g, " ");
-	const band = req.params.band.replace(/-/g, " ");
+	const album: string = req.body.title.replace(/-/g, " ")
+	const band: string = req.body.band.replace(/-/g, " ")
 
 	const selectAlbumId = `
 		SELECT album.album_id 
@@ -27,7 +28,7 @@ router.get("/album=:title&band=:band", async (req, res, next) => {
 	`;
 
 	const albums = await selectInfo(selectAlbumId, [album, band]);
-	const albumId = albums.info.map((e) => e.album_id)[0];
+	const albumId = albums.info?.map((e) => e.album_id)[0];
 	const songs = await selectInfo(selectSongs, albumId);
 	sendResult(res, songs);
 });
@@ -45,7 +46,7 @@ router.get("/albumId=:album_id", async (req, res, next) => {
 		ORDER BY alsong.order ASC
 	`;
 
-	const songs = await selectInfo(selectSongs, albumId);
+	const songs = await selectInfo(selectSongs, [albumId]);
 	sendResult(res, songs);
 });
 
