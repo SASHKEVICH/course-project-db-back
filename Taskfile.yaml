@@ -5,6 +5,7 @@ version: '3'
 tasks:
   dev_debug: 
     cmds:
+      - npx tsc
       - npx nodemon -r dotenv/config ./src/app.ts
     silent: true
 

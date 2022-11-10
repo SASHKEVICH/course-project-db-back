@@ -1,13 +1,18 @@
 import { Router } from "express";
 import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
+import insertInfo from "../helpers/insertInfo";
+import deleteInfo from "../helpers/deleteInfo";
+import updateInfo from "../helpers/updateInfo";
 
 const router = Router();
 
 /* GET songs in album by title and band*/
 router.get("/album=:title&band=:band", async (req, res) => {
-	const album: string = req.body.title.replace(/-/g, " ")
-	const band: string = req.body.band.replace(/-/g, " ")
+	// @ts-ignore
+	const album: string = req.params.title.replace(/-/g, " ");
+	// @ts-ignore
+	const band: string = req.params.band.replace(/-/g, " ");
 
 	const selectAlbumId = `
 		SELECT album.album_id 
@@ -48,6 +53,44 @@ router.get("/albumId=:album_id", async (req, res) => {
 
 	const songs = await selectInfo(selectSongs, [albumId]);
 	sendResult(res, songs);
+});
+
+/* CREATE song */
+router.post("/", async (req, res) => {
+	const parsedData = req.body;
+	const insertSong = `
+		INSERT INTO song
+		VALUES (DEFAULT, '${parsedData.title}', ${parsedData.isExplicit}, '${parsedData.duration}') RETURNING song_id
+	`
+	const songId = await insertInfo(insertSong);
+	sendResult(res, songId);
+});
+
+/* UPDATE song */
+router.put("/", async (req, res) => {
+	const parsedData = req.body;
+	const insertSong = `
+		UPDATE song
+		SET 
+		  title = '${parsedData.title}', 
+		  explicit = ${parsedData.isExplicit}, 
+			duration = '${parsedData.duration}'
+		WHERE song_id = '${parsedData.songId}'
+	`
+	const result = await updateInfo(insertSong);
+	sendResult(res, result);
+});
+
+
+/* DELETE song */
+router.delete("/id=:id", async (req, res) => {
+	const songId = req.params.id;
+	
+	const deleteSong = `
+		DELETE FROM song WHERE song_id = ${songId}
+	`
+	const result = await deleteInfo(deleteSong);
+	sendResult(res, result);
 });
 
 export default router;

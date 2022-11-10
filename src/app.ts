@@ -8,10 +8,10 @@ import genresRouter from "./routes/genres"
 import socialMediaRouter from "./routes/socialMedias"
 import membersRouter from "./routes/members"
 
-import pkg from "body-parser";
-const { urlencoded, json } = pkg;
-
 const app: Express = express();
+
+app.use(express.urlencoded());
+app.use(express.json());
 
 app.use("/albums", albumsRouter);
 app.use("/songs", songsRouter);
@@ -19,9 +19,6 @@ app.use("/bands", bandsRouter);
 app.use("/genres", genresRouter);
 app.use("/social_media", socialMediaRouter);
 app.use("/members", membersRouter);
-
-app.use(express.urlencoded());
-app.use(express.json());
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

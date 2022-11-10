@@ -37,8 +37,8 @@ model album_song {
   album_id Int?
   song_id  Int?
   order    Int?
-  album    album? @relation(fields: [album_id], references: [album_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_album_id")
-  song     song?  @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_song_id")
+  album    album? @relation(fields: [album_id], references: [album_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_album_id")
+  song     song?  @relation(fields: [song_id], references: [song_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_song_id")
 
   @@map("album/song")
 }
