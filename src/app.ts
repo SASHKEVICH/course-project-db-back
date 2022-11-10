@@ -20,8 +20,8 @@ app.use("/genres", genresRouter);
 app.use("/social_media", socialMediaRouter);
 app.use("/members", membersRouter);
 
-app.use(urlencoded({ extended: false }));
-app.use(json());
+app.use(express.urlencoded());
+app.use(express.json());
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

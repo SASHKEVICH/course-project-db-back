@@ -5,7 +5,7 @@ import selectInfo from "../helpers/selectInfo";
 const router = Router();
 
 /* GET songs in album by title and band*/
-router.get("/album=:title&band=:band", async (req, res, next) => {
+router.get("/album=:title&band=:band", async (req, res) => {
 	const album: string = req.body.title.replace(/-/g, " ")
 	const band: string = req.body.band.replace(/-/g, " ")
 
@@ -34,7 +34,7 @@ router.get("/album=:title&band=:band", async (req, res, next) => {
 });
 
 /* GET songs in album by id*/
-router.get("/albumId=:album_id", async (req, res, next) => {
+router.get("/albumId=:album_id", async (req, res) => {
 	const albumId = req.params.album_id;
 
 	const selectSongs = `
