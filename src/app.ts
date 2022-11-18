@@ -7,6 +7,7 @@ import bandsRouter from "./routes/bands"
 import genresRouter from "./routes/genres"
 import socialMediaRouter from "./routes/socialMedias"
 import membersRouter from "./routes/members"
+import searchRouter from "./routes/search"
 
 const app: Express = express();
 
@@ -19,6 +20,7 @@ app.use("/bands", bandsRouter);
 app.use("/genres", genresRouter);
 app.use("/social_media", socialMediaRouter);
 app.use("/members", membersRouter);
+app.use("/search", searchRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

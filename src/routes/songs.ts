@@ -37,13 +37,22 @@ router.get("/album=:title&band=:band", async (req, res) => {
 	const songs = await selectInfo(selectSongs, albumId);
 	sendResult(res, songs);
 });
+router.get("/", async (req, res) => {
+	const selectSongs = `
+		SELECT song_id, duration, title
+		FROM song
+	`;
+
+	const songs = await selectInfo(selectSongs, []);
+	sendResult(res, songs);
+});
 
 /* GET songs in album by id*/
 router.get("/albumId=:album_id", async (req, res) => {
 	const albumId = req.params.album_id;
 
 	const selectSongs = `
-		SELECT song.song_id, song.title AS song, album.title AS album
+		SELECT song.song_id, song.duration, song.title AS title
 		FROM album
 		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
 		LEFT JOIN song ON song.song_id = alsong.song_id

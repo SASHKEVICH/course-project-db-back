@@ -37,10 +37,18 @@ router.get("/title=:title", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
 	const id = req.params.id;
 	const sqlQuery = `
-		SELECT album.*, band.title AS band
+		SELECT 
+			album.title AS title,
+			album.album_cover_path AS cover,
+			album.released AS released,
+			album.explicit AS explicit,
+			album.history AS history,
+			album_type.type AS type,
+			band.title AS band
 		FROM album
 		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
 		LEFT JOIN band ON band.band_id = alband.band_id
+		LEFT JOIN album_type ON album_type.album_type_id = album.type
 		WHERE album.album_id = $1
 	`;
 
