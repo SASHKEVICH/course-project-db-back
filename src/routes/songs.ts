@@ -37,15 +37,6 @@ router.get("/album=:title&band=:band", async (req, res) => {
 	const songs = await selectInfo(selectSongs, albumId);
 	sendResult(res, songs);
 });
-router.get("/", async (req, res) => {
-	const selectSongs = `
-		SELECT song_id, duration, title
-		FROM song
-	`;
-
-	const songs = await selectInfo(selectSongs, []);
-	sendResult(res, songs);
-});
 
 /* GET songs in album by id*/
 router.get("/albumId=:album_id", async (req, res) => {
