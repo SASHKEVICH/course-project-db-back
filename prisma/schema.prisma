@@ -69,7 +69,6 @@ model genre {
   name        String?       @db.VarChar(20)
   genre_album genre_album[]
   genre_band  genre_band[]
-  genre_song  genre_song[]
 }
 
 model genre_album {
@@ -90,16 +89,6 @@ model genre_band {
   genre    genre? @relation(fields: [genre_id], references: [genre_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_genre_id")
 
   @@map("genre/band")
-}
-
-model genre_song {
-  id       Int    @id @default(autoincrement())
-  genre_id Int?
-  song_id  Int?
-  genre    genre? @relation(fields: [genre_id], references: [genre_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_genre_id")
-  song     song?  @relation(fields: [song_id], references: [song_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_song_id")
-
-  @@map("genre/song")
 }
 
 model member {
@@ -165,7 +154,6 @@ model song {
   explicit   Boolean      @default(false)
   duration   String?      @db.VarChar(20)
   album_song album_song[]
-  genre_song genre_song[]
 }
 
 model user {
