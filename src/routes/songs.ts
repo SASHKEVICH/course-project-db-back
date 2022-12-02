@@ -43,7 +43,12 @@ router.get("/albumId=:album_id", async (req, res) => {
 	const albumId = req.params.album_id;
 
 	const selectSongs = `
-		SELECT song.song_id, song.duration, song.title AS title
+		SELECT 
+			song.song_id, 
+			song.duration, 
+			song.title AS title,
+			song.explicit,
+			album.title AS album
 		FROM album
 		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
 		LEFT JOIN song ON song.song_id = alsong.song_id
