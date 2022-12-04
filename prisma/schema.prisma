@@ -55,8 +55,8 @@ model band {
   history           String?
   origin_city       String?             @db.VarChar(30)
   photo_path        String?
-  founded           String?             @db.VarChar(30)
-  ended             String?             @db.VarChar(30)
+  founded           DateTime?           @db.Date
+  ended             DateTime?           @db.Date
   country           String?             @db.VarChar(40)
   album_band        album_band[]
   genre_band        genre_band[]
