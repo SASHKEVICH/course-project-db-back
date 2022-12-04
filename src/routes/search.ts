@@ -27,14 +27,24 @@ router.get('/:request', async (req, res) => {
 		LEFT JOIN song ON song.song_id = alsong.song_id
 		WHERE strpos(lower(song.title), lower('${request}')) > 0
 	`
+
+	const membersRequest = request.replace(/ /g, "|");
+	const searchInMembers = `
+		SELECT name FROM member
+		WHERE lower(name COLLATE "en_US") ~ '${membersRequest}';
+	`;
+
 	const albums = await selectInfo(searchInAlbums, []);
 	const bands = await selectInfo(searchInBands, []);
 	const songs = await selectInfo(searchInSongs, []);
+	const members = await selectInfo(searchInMembers, []);
+
 	const result = {
 		"message": "success",
 		"albums": albums.info,
 		"bands": bands.info,
-		"songs": songs.info
+		"songs": songs.info,
+		"members": members.info
 	};
 
 	sendResult(res, result);

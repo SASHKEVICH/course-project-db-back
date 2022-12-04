@@ -41,13 +41,14 @@ router.get("/:id", async (req, res, next) => {
 	const memberId = req.params.id;
 	const sqlQuery = `
 		SELECT 
-			public.member.member_id AS id,
-			public.member.name AS name,
-			public.member.birth_date AS bdate,
-			public.member.die_date AS ddate,
-			public.member.origin_city AS origin
-		FROM public.member
-		WHERE public.member.member_id = $1
+			member_id AS id,
+			name AS name,
+			to_char(birth_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS bdate,
+			to_char(die_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS ddate,
+			origin_city AS origin,
+			biography
+		FROM member
+		WHERE member_id = $1
 	`;
 
 	const member = await selectInfo(sqlQuery, [memberId]);
