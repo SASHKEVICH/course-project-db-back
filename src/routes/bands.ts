@@ -67,7 +67,7 @@ router.get("/:id", async (req, res, next) => {
 		genres: genresArray,
 		currentMembers: currentMembers.info,
 		previousMembers: previousMembers.info
-	}
+	};
 
 	// @ts-ignore
 	band.info = mergedBand

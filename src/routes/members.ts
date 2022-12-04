@@ -51,7 +51,27 @@ router.get("/:id", async (req, res, next) => {
 		WHERE member_id = $1
 	`;
 
+	const selectCurrentBands = `
+		SELECT band.band_id AS band_id, band.title AS title
+		FROM band
+		LEFT JOIN "member/band" memband ON memband.band_id = band.band_id
+		LEFT JOIN member ON member.member_id = memband.member_id
+		WHERE member.member_id = $1 AND memband.previous = false
+		ORDER BY id ASC
+	`;
+
 	const member = await selectInfo(sqlQuery, [memberId]);
+	const currentBands = await selectInfo(selectCurrentBands, [memberId]);
+
+	// @ts-ignore
+	const info = member.info[0]
+	const mergedMember = {
+		...info,
+		currentBands: currentBands.info
+	};
+
+	// @ts-ignore
+	member.info = mergedMember;
 	sendResult(res, member);
 });
 

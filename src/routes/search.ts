@@ -21,7 +21,7 @@ router.get('/:request', async (req, res) => {
 	`
 
 	const searchInSongs = `
-		SELECT song.song_id, song.title AS title, album.title as album
+		SELECT song.song_id, album.album_id, song.title AS title, album.title as album
 		FROM album
 		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
 		LEFT JOIN song ON song.song_id = alsong.song_id

@@ -46,6 +46,7 @@ router.get("/albumId=:album_id", async (req, res) => {
 		SELECT 
 			song.song_id, 
 			song.duration, 
+			album.album_id,
 			song.title AS title,
 			song.explicit,
 			album.title AS album
