@@ -158,9 +158,10 @@ model song {
 }
 
 model user {
-  user_id  Int    @id @default(autoincrement())
-  name     String @db.VarChar(60)
-  nickname String @db.VarChar(60)
-  email    String @db.VarChar(60)
-  password String @db.VarChar(60)
+  user_id  Int     @id @default(autoincrement())
+  name     String  @db.VarChar(60)
+  nickname String? @db.VarChar(60)
+  email    String  @unique @db.VarChar(60)
+  password String
+  token    String?
 }

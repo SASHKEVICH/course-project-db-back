@@ -9,6 +9,9 @@ import socialMediaRouter from "./routes/socialMedias"
 import membersRouter from "./routes/members"
 import searchRouter from "./routes/search"
 
+import registerRouter from "./routes/user/register"
+import loginRouter from "./routes/user/login"
+
 const app: Express = express();
 
 app.use(express.urlencoded());
@@ -21,6 +24,8 @@ app.use("/genres", genresRouter);
 app.use("/social_media", socialMediaRouter);
 app.use("/members", membersRouter);
 app.use("/search", searchRouter);
+app.use("/", registerRouter);
+app.use("/", loginRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
