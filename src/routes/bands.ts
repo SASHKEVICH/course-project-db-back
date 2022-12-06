@@ -12,6 +12,7 @@ router.get("/:id", async (req, res, next) => {
 			band_id, 
 			title, 
 			origin_city,
+			photo_path,
 			to_char(founded, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS founded,
 			to_char(ended, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS ended,
 			country, 
@@ -59,8 +60,7 @@ router.get("/:id", async (req, res, next) => {
 	const genresArray: String[] = []
 	genres.info?.forEach((elem) => {genresArray.push(elem['genre'])})
 
-	// @ts-ignore
-	const info = band.info[0];
+	const info = band.info?.pop();
 	const mergedBand = {
 		...info,
 		albums: albums.info,

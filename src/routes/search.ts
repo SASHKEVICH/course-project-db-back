@@ -7,7 +7,7 @@ const router = Router();
 router.get('/:request', async (req, res) => {
 	const request = req.params.request.replace(/-/g, " ");
 	const searchInAlbums = `
-		SELECT album.album_id, album.title as title, band.title AS band, album.explicit
+		SELECT album.album_id, album.album_cover_path AS cover, album.title as title, band.title AS band, album.explicit
 		FROM album 
 		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
 		LEFT JOIN band ON band.band_id = alband.band_id
@@ -15,13 +15,13 @@ router.get('/:request', async (req, res) => {
 	`
 
 	const searchInBands = `
-		SELECT band_id, title
+		SELECT band_id, title, photo_path
 		FROM band
 		WHERE strpos(lower(title), lower('${request}')) > 0
 	`
 
 	const searchInSongs = `
-		SELECT song.song_id, album.album_id, song.title AS title, album.title as album
+		SELECT song.song_id, album.album_id, song.title AS title, album.title as album, album.album_cover_path AS cover
 		FROM album
 		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
 		LEFT JOIN song ON song.song_id = alsong.song_id
@@ -30,7 +30,7 @@ router.get('/:request', async (req, res) => {
 
 	const membersRequest = request.replace(/ /g, "|");
 	const searchInMembers = `
-		SELECT member_id AS id, name FROM member
+		SELECT member_id AS id, name, photo_path FROM member
 		WHERE lower(name COLLATE "en_US") ~ '${membersRequest}';
 	`;
 

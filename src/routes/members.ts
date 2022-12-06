@@ -43,6 +43,7 @@ router.get("/:id", async (req, res, next) => {
 		SELECT 
 			member_id AS id,
 			name AS name,
+			photo_path,
 			to_char(birth_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS bdate,
 			to_char(die_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS ddate,
 			origin_city AS origin,

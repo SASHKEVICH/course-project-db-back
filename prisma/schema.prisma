@@ -98,6 +98,7 @@ model member {
   birth_date          DateTime?             @db.Date
   die_date            DateTime?             @db.Date
   origin_city         String?               @db.VarChar(40)
+  photo_path          String?
   member_band         member_band[]
   social_media_member social_media_member[]
 }
