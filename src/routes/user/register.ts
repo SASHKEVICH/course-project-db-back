@@ -8,6 +8,7 @@ const prisma = new PrismaClient()
 const saltRounds = 10;
 
 router.post("/register", async (req, res) => {
+	console.log("--POST register");
 	try {
 		const { name, nickname, email, password } = req.body;
 		if (!(email && password && name && nickname)) {
@@ -17,7 +18,6 @@ router.post("/register", async (req, res) => {
 		const oldUser = await prisma.user.findUnique({
 			where: { email: email }
 		});
-		console.log(oldUser)
 		if (oldUser) {
       return res.status(409).send("User Already Exist. Please Login");
     };

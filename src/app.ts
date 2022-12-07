@@ -14,7 +14,6 @@ import loginRouter from "./routes/user/login"
 
 const app: Express = express();
 
-app.use(express.urlencoded());
 app.use(express.json());
 
 app.use("/albums", albumsRouter);
