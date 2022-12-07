@@ -1,11 +1,12 @@
 import { Router } from "express";
+import { PrismaClient } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
-import insertInfo from "../helpers/insertInfo";
-import deleteInfo from "../helpers/deleteInfo";
-import updateInfo from "../helpers/updateInfo";
+
+import auth from "../middleware/auth"
 
 const router = Router();
+const prisma = new PrismaClient();
 
 /* GET songs in album by title and band*/
 router.get("/album=:title&band=:band", async (req, res) => {
@@ -61,42 +62,90 @@ router.get("/albumId=:album_id", async (req, res) => {
 	sendResult(res, songs);
 });
 
+/* BELOW USES TOKENS */
+router.get("/", auth, async (req, res) => {
+	console.log("--GET all songs");
+	const songs = await prisma.song.findMany();
+	res.status(200).json({
+		message: "success",
+		songs
+	});
+});
+
 /* CREATE song */
-router.post("/", async (req, res) => {
-	const parsedData = req.body;
-	const insertSong = `
-		INSERT INTO song
-		VALUES (DEFAULT, '${parsedData.title}', ${parsedData.isExplicit}, '${parsedData.duration}') RETURNING song_id
-	`
-	const songId = await insertInfo(insertSong);
-	sendResult(res, songId);
+router.post("/", auth, async (req, res) => {
+	console.log("--POST create song");
+	const body = req.body;
+	try {
+		const song = await prisma.song.create({
+			data: {
+				title: body.title,
+				explicit: body.explicit,
+				duration: body.duration
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			song
+		});
+	} catch (error) {
+		res.status(400).json({
+			message: "failure",
+			error: "updating error"
+		})
+	}
 });
 
 /* UPDATE song */
-router.put("/", async (req, res) => {
-	const parsedData = req.body;
-	const insertSong = `
-		UPDATE song
-		SET 
-		  title = '${parsedData.title}', 
-		  explicit = ${parsedData.isExplicit}, 
-			duration = '${parsedData.duration}'
-		WHERE song_id = '${parsedData.songId}'
-	`
-	const result = await updateInfo(insertSong);
-	sendResult(res, result);
+router.put("/", auth, async (req, res) => {
+	console.log("--PUT update song");
+	const body = req.body;
+	try {
+		const song = await prisma.song.update({
+			where: {
+				song_id: body.songId
+			},
+			data: {
+				title: body.title,
+				explicit: body.explicit,
+				duration: body.duration
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			song
+		});
+	} catch (error) {
+		res.status(400).json({
+			message: "failure",
+			error: "updating error"
+		})
+	}
 });
 
-
 /* DELETE song */
-router.delete("/id=:id", async (req, res) => {
-	const songId = req.params.id;
-	
-	const deleteSong = `
-		DELETE FROM song WHERE song_id = ${songId}
-	`
-	const result = await deleteInfo(deleteSong);
-	sendResult(res, result);
+router.delete("/", auth, async (req, res) => {
+	console.log("--DELETE song");
+	const body = req.body;
+	try {
+		const song = await prisma.song.delete({
+			where: {
+				song_id: body.songId
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			song
+		});
+	} catch (error) {
+		res.status(400).json({
+			message: "failure",
+			error: "deleting error"
+		})
+	}
 });
 
 export default router;
