@@ -63,6 +63,8 @@ router.get("/albumId=:album_id", async (req, res) => {
 });
 
 /* BELOW USES TOKENS */
+
+/* GET all songs */
 router.get("/", auth, async (req, res) => {
 	console.log("--GET all songs");
 	const songs = await prisma.song.findMany();
