@@ -98,8 +98,8 @@ router.post("/add-to-album", auth, async (req, res) => {
 			album
 		});
 	} catch (error) {
+		console.error(error)
 		if (error instanceof Prisma.PrismaClientValidationError) {
-			console.log(error.message)
 			res.status(400).json({
 				message: "failure",
 				error: error
@@ -131,6 +131,7 @@ router.delete("/del-from-album", auth, async (req, res) => {
 			album
 		});
 	} catch (error) {
+		console.error(error)
 		if (error instanceof Prisma.PrismaClientValidationError) {
 			console.log(error.message)
 			res.status(400).json({
@@ -159,6 +160,7 @@ router.post("/", auth, async (req, res) => {
 			song
 		});
 	} catch (error) {
+		console.error(error)
 		res.status(400).json({
 			message: "failure",
 			error: "creating error"
@@ -187,6 +189,7 @@ router.put("/", auth, async (req, res) => {
 			song
 		});
 	} catch (error) {
+		console.error(error)
 		res.status(400).json({
 			message: "failure",
 			error: "updating error"
@@ -210,6 +213,7 @@ router.delete("/", auth, async (req, res) => {
 			song
 		});
 	} catch (error) {
+		console.error(error)
 		res.status(400).json({
 			message: "failure",
 			error: "deleting error"

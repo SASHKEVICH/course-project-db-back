@@ -68,6 +68,7 @@ router.post("/", auth, async (req, res) => {
 			genre
 		});
 	} catch (error) {
+		console.error(error)
 		res.status(400).json({
 			message: "failure",
 			error: "updating error"
@@ -94,6 +95,7 @@ router.put("/", auth, async (req, res) => {
 			genre
 		});
 	} catch (error) {
+		console.error(error)
 		res.status(400).json({
 			message: "failure",
 			error: "updating error"
@@ -117,6 +119,7 @@ router.delete("/", auth, async (req, res) => {
 			genre
 		});
 	} catch (error) {
+		console.error(error)
 		res.status(400).json({
 			message: "failure",
 			error: "deleting error"

@@ -1,11 +1,14 @@
 import { Router } from "express";
+import { Prisma, PrismaClient } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
+import auth from "../middleware/auth";
 
 const router = Router();
+const prisma = new PrismaClient();
 
 /* GET band by id */
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", async (req, res) => {
 	const id = req.params.id;
 	const sqlQuery = `
 		SELECT 
@@ -75,7 +78,7 @@ router.get("/:id", async (req, res, next) => {
 });
 
 /* GET band's history by id */
-router.get("/:id/history", async (req, res, next) => {
+router.get("/:id/history", async (req, res) => {
 	const id = req.params.id;
 	const sqlQuery = `
 		SELECT history
@@ -88,7 +91,7 @@ router.get("/:id/history", async (req, res, next) => {
 });
 
 /* GET band's discography by id */
-router.get("/:id/discography", async (req, res, next) => {
+router.get("/:id/discography", async (req, res) => {
 	const id = req.params.id;
 	const sqlQuery = `
 		SELECT album.title AS album, album.released AS released, album_type.type AS album_type 

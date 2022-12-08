@@ -120,6 +120,7 @@ router.post("/", auth, async (req, res) => {
 			album
 		});
 	} catch (error) {
+		console.error(error)
 		if (error instanceof Prisma.PrismaClientUnknownRequestError) {
 			res.status(400).json({
 				message: "failure",
@@ -153,6 +154,7 @@ router.post("/add-to-disc", auth, async (req, res) => {
 			band
 		});
 	} catch (error) {
+		console.error(error)
 		if (error instanceof Prisma.PrismaClientValidationError) {
 			console.log(error.message)
 			res.status(400).json({
@@ -186,6 +188,7 @@ router.delete("/del-from-disc", auth, async (req, res) => {
 			band
 		});
 	} catch (error) {
+		console.error(error)
 		if (error instanceof Prisma.PrismaClientValidationError) {
 			console.log(error.message)
 			res.status(400).json({
@@ -220,6 +223,7 @@ router.put("/", auth, async (req, res) => {
 			album
 		});
 	} catch (error) {
+		console.error(error)
 		res.status(400).json({
 			message: "failure",
 			error: "updating error"
@@ -243,6 +247,7 @@ router.delete("/", auth, async (req, res) => {
 			album
 		});
 	} catch (error) {
+		console.error(error)
 		res.status(400).json({
 			message: "failure",
 			error: "deleting error"
