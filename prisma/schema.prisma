@@ -50,7 +50,7 @@ model album_type {
 }
 
 model band {
-  band_id           Int                 @id
+  band_id           Int                 @id @unique @default(autoincrement())
   title             String              @db.VarChar(40)
   history           String?
   origin_city       String?             @db.VarChar(30)
