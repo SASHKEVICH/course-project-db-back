@@ -1,11 +1,9 @@
 import { Router } from "express";
-import { PrismaClient } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
-
+import prisma from "../database/prisma";
 import auth from "../middleware/auth"
 
-const prisma = new PrismaClient();
 const router = Router();
 
 /* GET genres of album */

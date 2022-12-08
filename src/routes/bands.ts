@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
+import prisma from "../database/prisma";
 import auth from "../middleware/auth";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 /* GET band by id */
 router.get("/:id", async (req, res) => {

@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
 import auth from "../middleware/auth";
+import prisma from "../database/prisma";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 /* GET album by title */
 router.get("/title=:title", async (req, res, next) => {

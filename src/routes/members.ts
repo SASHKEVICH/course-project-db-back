@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
 import auth from "../middleware/auth";
+import prisma from "../database/prisma";
 
-const prisma = new PrismaClient();
 const router = Router();
 
 /* GET all members of band */
