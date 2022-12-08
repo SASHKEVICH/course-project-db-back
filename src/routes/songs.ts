@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
 
@@ -74,6 +74,73 @@ router.get("/", auth, async (req, res) => {
 	});
 });
 
+/* ADD song to album */
+router.post("/add-to-album", auth, async (req, res) => {
+	console.log("--POST add song to album");
+	const body = req.body;
+	try {
+		const album = await prisma.album.update({
+			where: {
+				album_id: body.albumId
+			},
+			data: {
+				album_song: {
+					create: {
+						song_id: body.songId,
+						order: body.order
+					}
+				}
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			album
+		});
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientValidationError) {
+			console.log(error.message)
+			res.status(400).json({
+				message: "failure",
+				error: error
+			})
+    };
+	}
+});
+
+/* DELETE song from album */
+router.delete("/del-from-album", auth, async (req, res) => {
+	console.log("--DELETE song from album");
+	const body = req.body;
+	try {
+		const album = await prisma.album.update({
+			where: {
+				album_id: body.albumId
+			},
+			data: {
+				album_song: {
+					deleteMany: {
+						song_id: body.songId
+					}
+				}
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			album
+		});
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientValidationError) {
+			console.log(error.message)
+			res.status(400).json({
+				message: "failure",
+				error: error
+			})
+    };
+	}
+});
+
 /* CREATE song */
 router.post("/", auth, async (req, res) => {
 	console.log("--POST create song");
@@ -94,7 +161,7 @@ router.post("/", auth, async (req, res) => {
 	} catch (error) {
 		res.status(400).json({
 			message: "failure",
-			error: "updating error"
+			error: "creating error"
 		})
 	}
 });
