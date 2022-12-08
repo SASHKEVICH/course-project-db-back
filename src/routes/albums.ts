@@ -108,7 +108,7 @@ router.post("/", auth, async (req, res) => {
 			data: {
 				title: body.title,
 				album_cover_path: body.coverPath,
-				released: new Date(body.released),
+				released: body.released != undefined ? new Date(body.released) : null,
 				explicit: body.explicit,
 				history: body.history,
 				type: body.type
@@ -252,6 +252,72 @@ router.delete("/", auth, async (req, res) => {
 			message: "failure",
 			error: "deleting error"
 		})
+	}
+});
+
+/* ADD genre to album */
+router.post("/add-genre", auth, async (req, res) => {
+	console.log("--POST add genre to album");
+	const body = req.body;
+	try {
+		const album = await prisma.album.update({
+			where: {
+				album_id: body.albumId
+			},
+			data: {
+				genre_album: {
+					create: {
+						genre_id: body.genreId,
+					}
+				}
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			album
+		});
+	} catch (error) {
+		console.error(error)
+		if (error instanceof Prisma.PrismaClientValidationError) {
+			res.status(400).json({
+				message: "failure",
+				error: error
+			})
+    };
+	}
+});
+
+/* DELETE genre from album */
+router.post("/delete-genre", auth, async (req, res) => {
+	console.log("--POST delete genre from band");
+	const body = req.body;
+	try {
+		const album = await prisma.album.update({
+			where: {
+				album_id: body.albumId
+			},
+			data: {
+				genre_album: {
+					deleteMany: {
+						genre_id: body.genreId,
+					}
+				}
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			album
+		});
+	} catch (error) {
+		console.error(error)
+		if (error instanceof Prisma.PrismaClientValidationError) {
+			res.status(400).json({
+				message: "failure",
+				error: error
+			})
+    };
 	}
 });
 

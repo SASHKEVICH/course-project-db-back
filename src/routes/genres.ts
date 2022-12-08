@@ -103,7 +103,7 @@ router.put("/", auth, async (req, res) => {
 	}
 });
 
-/* DELETE song */
+/* DELETE genre */
 router.delete("/", auth, async (req, res) => {
 	console.log("--DELETE genre");
 	const body = req.body;
