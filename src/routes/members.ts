@@ -1,6 +1,9 @@
 import { Router } from "express";
+import { Prisma } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
+import auth from "../middleware/auth";
+import prisma from "../database/prisma";
 
 const router = Router();
 
@@ -88,5 +91,172 @@ router.get("/:id/bio", async (req, res, next) => {
 	const member = await selectInfo(sqlQuery, [memberId]);
 	sendResult(res, member);
 });
+
+/* BELOW USES TOKENS */
+
+/* GET all members */
+router.get("/", auth, async (req, res) => {
+	console.log("--GET all members");
+	const bands = await prisma.member.findMany();
+	res.status(200).json({
+		message: "success",
+		bands
+	});
+});
+
+/* ADD member to band */
+router.post("/add-to-band", auth, async (req, res) => {
+	console.log("--POST add member to band");
+	const body = req.body;
+	try {
+		const member = await prisma.member.update({
+			where: {
+				member_id: body.memberId
+			},
+			data: {
+				member_band: {
+					create: {
+						band_id: body.bandId,
+						previous: body.previous ?? false
+					}
+				}
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			member
+		});
+	} catch (error) {
+		console.error(error)
+		if (error instanceof Prisma.PrismaClientValidationError) {
+			console.log(error.message)
+			res.status(400).json({
+				message: "failure",
+				error: error
+			})
+    };
+	}
+});
+
+/* DELETE album from band's discography */
+router.delete("/del-from-disc", auth, async (req, res) => {
+	console.log("--DELETE album from band");
+	const body = req.body;
+	try {
+		const member = await prisma.member.update({
+			where: {
+				member_id: body.memberId
+			},
+			data: {
+				member_band: {
+					deleteMany: {
+						band_id: body.bandId
+					}
+				}
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			member
+		});
+	} catch (error) {
+		console.error(error)
+		if (error instanceof Prisma.PrismaClientValidationError) {
+			console.log(error.message)
+			res.status(400).json({
+				message: "failure",
+				error: error
+			})
+    };
+	}
+});
+
+/* CREATE member */
+router.post("/", auth, async (req, res) => {
+	console.log("--POST create member");
+	const body = req.body;
+	try {
+		const member = await prisma.member.create({
+			data: {
+				name: body.name,
+				biography: body.biography,
+				birth_date: body.birthDate != null ? new Date(body.birthDate) : null,
+				die_date: body.dieDate != null ? new Date(body.dieDate) : null,
+				origin_city: body.origin,
+				photo_path: body.photoPath
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			member
+		});
+	} catch (error) {
+		console.error(error)
+		res.status(400).json({
+			message: "failure",
+			error: "create error"
+		})
+	}
+});
+
+/* UPDATE member */
+router.put("/", auth, async (req, res) => {
+	console.log("--PUT update member");
+	const body = req.body;
+	try {
+		const member = await prisma.member.update({
+			where: {
+				member_id: body.memberId
+			},
+			data: {
+				name: body.name,
+				biography: body.biography,
+				birth_date: body.birthDate != null ? new Date(body.birthDate) : null,
+				die_date: body.dieDate != null ? new Date(body.dieDate) : null,
+				origin_city: body.origin,
+				photo_path: body.photoPath
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			member
+		});
+	} catch (error) {
+		console.error(error)
+		res.status(400).json({
+			message: "failure",
+			error: "updating error"
+		})
+	}
+});
+
+/* DELETE member */
+router.delete("/", auth, async (req, res) => {
+	console.log("--DELETE member");
+	const body = req.body;
+	try {
+		const member = await prisma.member.delete({
+			where: {
+				member_id: body.memberId
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			member
+		});
+	} catch (error) {
+		console.error(error)
+		res.status(400).json({
+			message: "failure",
+			error: "deleting error"
+		})
+	}
+});
+
 
 export default router;

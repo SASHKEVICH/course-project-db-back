@@ -1,11 +1,14 @@
 import { Router } from "express";
+import { Prisma } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
+import prisma from "../database/prisma";
+import auth from "../middleware/auth";
 
 const router = Router();
 
 /* GET band by id */
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", async (req, res) => {
 	const id = req.params.id;
 	const sqlQuery = `
 		SELECT 
@@ -75,7 +78,7 @@ router.get("/:id", async (req, res, next) => {
 });
 
 /* GET band's history by id */
-router.get("/:id/history", async (req, res, next) => {
+router.get("/:id/history", async (req, res) => {
 	const id = req.params.id;
 	const sqlQuery = `
 		SELECT history
@@ -88,7 +91,7 @@ router.get("/:id/history", async (req, res, next) => {
 });
 
 /* GET band's discography by id */
-router.get("/:id/discography", async (req, res, next) => {
+router.get("/:id/discography", async (req, res) => {
 	const id = req.params.id;
 	const sqlQuery = `
 		SELECT album.title AS album, album.released AS released, album_type.type AS album_type 
@@ -102,6 +105,171 @@ router.get("/:id/discography", async (req, res, next) => {
 
 	const discography = await selectInfo(sqlQuery, [id]);
 	sendResult(res, discography);
+});
+
+/* BELOW USES TOKENS */
+
+/* GET all bands */
+router.get("/", auth, async (req, res) => {
+	console.log("--GET all bands");
+	const bands = await prisma.band.findMany();
+	res.status(200).json({
+		message: "success",
+		bands
+	});
+});
+
+/* ADD genre to band */
+router.post("/add-genre", auth, async (req, res) => {
+	console.log("--POST add genre to band");
+	const body = req.body;
+	try {
+		const band = await prisma.band.update({
+			where: {
+				band_id: body.bandId
+			},
+			data: {
+				genre_band: {
+					create: {
+						genre_id: body.genreId,
+					}
+				}
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			band
+		});
+	} catch (error) {
+		console.error(error)
+		if (error instanceof Prisma.PrismaClientValidationError) {
+			res.status(400).json({
+				message: "failure",
+				error: error
+			})
+    };
+	}
+});
+
+/* DELETE genre from band */
+router.post("/delete-genre", auth, async (req, res) => {
+	console.log("--POST delete genre from band");
+	const body = req.body;
+	try {
+		const band = await prisma.band.update({
+			where: {
+				band_id: body.bandId
+			},
+			data: {
+				genre_band: {
+					deleteMany: {
+						genre_id: body.genreId,
+					}
+				}
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			band
+		});
+	} catch (error) {
+		console.error(error)
+		if (error instanceof Prisma.PrismaClientValidationError) {
+			res.status(400).json({
+				message: "failure",
+				error: error
+			})
+    };
+	}
+});
+
+/* CREATE band */
+router.post("/", auth, async (req, res) => {
+	console.log("--POST create band");
+	const body = req.body;
+	try {
+		const band = await prisma.band.create({
+			data: {
+				title: body.title,
+				history: body.history,
+				origin_city: body.originCity || undefined,
+				photo_path: body.photoPath || undefined,
+				founded: body.founded != undefined ? new Date(body.founded) : null,
+				ended: body.ended != undefined ? new Date(body.ended) : null,
+				country: body.country || undefined
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			band
+		});
+	} catch (error) {
+		console.error(error)
+		res.status(400).json({
+			message: "failure",
+			error: "create error"
+		})
+	}
+});
+
+/* UPDATE band */
+router.put("/", auth, async (req, res) => {
+	console.log("--PUT update band");
+	const body = req.body;
+	try {
+		const band = await prisma.band.update({
+			where: {
+				band_id: body.bandId
+			},
+			data: {
+				title: body.title,
+				history: body.history,
+				origin_city: body.originCity || undefined,
+				photo_path: body.photoPath || undefined,
+				founded: body.founded != undefined ? new Date(body.founded) : null,
+				ended: body.ended != undefined ? new Date(body.ended) : null,
+				country: body.country || undefined
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			band
+		});
+	} catch (error) {
+		console.error(error)
+		res.status(400).json({
+			message: "failure",
+			error: "updating error"
+		})
+	}
+});
+
+/* DELETE band */
+router.delete("/", auth, async (req, res) => {
+	console.log("--DELETE band");
+	const body = req.body;
+	try {
+		const band = await prisma.band.delete({
+			where: {
+				band_id: body.bandId
+			}
+		});
+
+		res.status(201).json({
+			message: "success",
+			band
+		});
+	} catch (error) {
+		console.error(error)
+		res.status(400).json({
+			message: "failure",
+			error: "deleting error"
+		})
+	}
 });
 
 export default router;
