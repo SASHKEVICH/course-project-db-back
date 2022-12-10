@@ -7,7 +7,7 @@ const router = Router();
 const prisma = new PrismaClient()
 const saltRounds = 10;
 
-router.post("/register", async (req, res) => {
+router.post("/registration", async (req, res) => {
 	console.log("--POST register");
 	try {
 		const { name, nickname, email, password } = req.body;
