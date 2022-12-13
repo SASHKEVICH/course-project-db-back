@@ -11,8 +11,8 @@ router.post("/registration", async (req, res) => {
 	console.log("--POST register");
 	try {
 		const { name, nickname, email, password } = req.body;
-		if (!(email && password && name && nickname)) {
-      res.status(400).send("All input is required");
+		if (!(email && password && name)) {
+      return res.status(400).send("All input is required");
     };
 
 		const oldUser = await prisma.user.findUnique({
@@ -40,7 +40,7 @@ router.post("/registration", async (req, res) => {
 		);
 		user.token = token;
 
-		res.status(201).json(user);
+		res.status(201).json({userId: user.user_id, token: user.token});
 	} catch (error) {
 		console.log(error);
 	}
