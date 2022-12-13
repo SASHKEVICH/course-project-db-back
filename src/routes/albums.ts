@@ -88,15 +88,40 @@ router.get("/:id", async (req, res, next) => {
 
 /* GET all albums */
 router.get("/", auth, async (req, res, next) => {
+	console.log("GET all albums")
 	let sqlQuery = `
-		SELECT album.*, band.title AS band
+		SELECT album.*, band.title AS band, album_type.type AS type
 		FROM album
 		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
 		LEFT JOIN band ON band.band_id = alband.band_id
+		LEFT JOIN album_type on album.type = album_type.album_type_id
 	`;
 
 	const albums = await selectInfo(sqlQuery, [""]);
 	sendResult(res, albums);
+});
+
+/* GET songs in album by id*/
+router.get("/songs/albumId=:album_id", auth, async (req, res) => {
+	const albumId = req.params.album_id;
+
+	const selectSongs = `
+		SELECT 
+			song.song_id, 
+			song.duration, 
+			album.album_id,
+			song.title AS title,
+			song.explicit,
+			album.title AS album
+		FROM album
+		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
+		LEFT JOIN song ON song.song_id = alsong.song_id
+		WHERE album.album_id = $1
+		ORDER BY alsong.order ASC
+	`;
+
+	const songs = await selectInfo(selectSongs, [albumId]);
+	sendResult(res, songs);
 });
 
 /* CREATE album */
@@ -235,11 +260,12 @@ router.put("/", auth, async (req, res) => {
 router.delete("/", auth, async (req, res) => {
 	console.log("--DELETE album");
 	const body = req.body;
+	const ids: number[] = body.albumIds
 	try {
-		const album = await prisma.album.delete({
+		const album = await prisma.album.deleteMany({
 			where: {
-				album_id: body.albumId
-			}
+				album_id: { in: ids }
+			},
 		});
 
 		res.status(201).json({

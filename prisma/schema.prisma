@@ -15,7 +15,7 @@ model album {
   explicit         Boolean       @default(false)
   history          String?
   type             Int?
-  album_type       album_type?   @relation(fields: [type], references: [album_type_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_album_type")
+  album_type       album_type?   @relation(fields: [type], references: [album_type_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_album_type")
   album_band       album_band[]
   album_song       album_song[]
   genre_album      genre_album[]
@@ -26,8 +26,8 @@ model album_band {
   album_id Int?
   band_id  Int?
   order    Int?
-  album    album? @relation(fields: [album_id], references: [album_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_album_id")
-  band     band?  @relation(fields: [band_id], references: [band_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_band_id")
+  album    album? @relation(fields: [album_id], references: [album_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_album_id")
+  band     band?  @relation(fields: [band_id], references: [band_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_band_id")
 
   @@map("album/band")
 }
@@ -75,8 +75,8 @@ model genre_album {
   id       Int    @id(map: "pkey_genre/album") @default(autoincrement())
   album_id Int?
   genre_id Int?
-  album    album? @relation(fields: [album_id], references: [album_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_album_id")
-  genre    genre? @relation(fields: [genre_id], references: [genre_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_genre_id")
+  album    album? @relation(fields: [album_id], references: [album_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_album_id")
+  genre    genre? @relation(fields: [genre_id], references: [genre_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_genre_id")
 
   @@map("genre/album")
 }
@@ -85,8 +85,8 @@ model genre_band {
   id       Int    @id @default(autoincrement())
   genre_id Int?
   band_id  Int?
-  band     band?  @relation(fields: [band_id], references: [band_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_band_id")
-  genre    genre? @relation(fields: [genre_id], references: [genre_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_genre_id")
+  band     band?  @relation(fields: [band_id], references: [band_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_band_id")
+  genre    genre? @relation(fields: [genre_id], references: [genre_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_genre_id")
 
   @@map("genre/band")
 }
@@ -108,8 +108,8 @@ model member_band {
   id        Int      @id @default(autoincrement())
   band_id   Int?
   member_id Int?
-  band      band?    @relation(fields: [band_id], references: [band_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_band_id")
-  member    member?  @relation(fields: [member_id], references: [member_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_member_id")
+  band      band?    @relation(fields: [band_id], references: [band_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_band_id")
+  member    member?  @relation(fields: [member_id], references: [member_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_member_id")
 
   @@map("member/band")
 }
@@ -118,7 +118,7 @@ model social_media {
   social_media_id     Int                   @id @default(autoincrement())
   link                String?
   type                Int?
-  social_media_type   social_media_type?    @relation(fields: [type], references: [social_media_type_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_social_media_type")
+  social_media_type   social_media_type?    @relation(fields: [type], references: [social_media_type_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_social_media_type")
   social_media_band   social_media_band[]
   social_media_member social_media_member[]
 }
@@ -127,8 +127,8 @@ model social_media_band {
   id              Int           @id @default(autoincrement())
   social_media_id Int?
   band_id         Int?
-  band            band?         @relation(fields: [band_id], references: [band_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_band_id")
-  social_media    social_media? @relation(fields: [social_media_id], references: [social_media_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_social_media_id")
+  band            band?         @relation(fields: [band_id], references: [band_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_band_id")
+  social_media    social_media? @relation(fields: [social_media_id], references: [social_media_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_social_media_id")
 
   @@map("social_media/band")
 }
@@ -137,8 +137,8 @@ model social_media_member {
   id              Int           @id @default(autoincrement())
   member_id       Int?
   social_media_id Int?
-  member          member?       @relation(fields: [member_id], references: [member_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_member_id")
-  social_media    social_media? @relation(fields: [social_media_id], references: [social_media_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_social_media_id")
+  member          member?       @relation(fields: [member_id], references: [member_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_member_id")
+  social_media    social_media? @relation(fields: [social_media_id], references: [social_media_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_social_media_id")
 
   @@map("social_media/member")
 }
