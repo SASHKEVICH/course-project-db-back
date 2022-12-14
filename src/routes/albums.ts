@@ -194,57 +194,6 @@ router.post("/add-to-disc", auth, async (req, res) => {
 	}
 });
 
-/* DELETE album from band's discography */
-router.delete("/del-from-disc", auth, async (req, res) => {
-	console.log("--DELETE album from band");
-	const body = req.body;
-	try {
-		// const band = await prisma.album.update({
-		// 	where: {
-		// 		album_id: body.albumId
-		// 	},
-		// 	data: {
-		// 		// album_band: {
-		// 		// 	deleteMany: {
-		// 		// 		album_id: body.albumId
-		// 		// 	}
-		// 		// }
-		// 		album_band: {
-		// 			disconnect: {
-		// 				id: body.bandId
-		// 			}
-		// 		}
-		// 	}
-		// });
-
-		const band = await prisma.album_band.upsert({
-			create: {
-
-			},
-			update: {
-
-			},
-			where: {
-
-			}
-		})
-
-		res.status(201).json({
-			message: "success",
-			band
-		});
-	} catch (error) {
-		console.error(error)
-		if (error instanceof Prisma.PrismaClientValidationError) {
-			console.log(error.message)
-			res.status(400).json({
-				message: "failure",
-				error: error
-			})
-    };
-	}
-});
-
 /* UPDATE album */
 router.put("/", auth, async (req, res) => {
 	console.log("--PUT update album");
