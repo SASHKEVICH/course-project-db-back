@@ -7,6 +7,21 @@ import auth from "../middleware/auth";
 
 const router = Router();
 
+/* GET band's title and id */
+router.get("/short", auth, async (req, res) => {
+	console.log("--GET band's title and id");
+	const bands = await prisma.band.findMany({
+		select: {
+			band_id: true,
+			title: true,
+		}
+	});
+	res.status(200).json({
+		message: "success",
+		bands
+	});
+});
+
 /* GET band by id */
 router.get("/:id", async (req, res) => {
 	const id = req.params.id;

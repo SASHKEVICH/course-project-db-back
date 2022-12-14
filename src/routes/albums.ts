@@ -4,6 +4,8 @@ import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
 import auth from "../middleware/auth";
 import prisma from "../database/prisma";
+import { transformDocument } from "@prisma/client/runtime";
+import { brotliDecompress } from "zlib";
 
 const router = Router();
 
@@ -160,23 +162,25 @@ router.post("/add-to-disc", auth, async (req, res) => {
 	console.log("--POST add album to band");
 	const body = req.body;
 	try {
-		const band = await prisma.band.update({
-			where: {
+		const album = await prisma.album_band.upsert({
+			create: {
+				album_id: body.albumId,
 				band_id: body.bandId
 			},
-			data: {
-				album_band: {
-					create: {
-						album_id: body.albumId,
-						order: body.order
-					}
+			update: {
+				band_id: body.bandId
+			},
+			where: {
+				album_id_band_id: {
+					album_id: body.albumId,
+					band_id: body.bandId
 				}
-			}
+			},
 		});
 
 		res.status(201).json({
 			message: "success",
-			band
+			album
 		});
 	} catch (error) {
 		console.error(error)
@@ -195,18 +199,35 @@ router.delete("/del-from-disc", auth, async (req, res) => {
 	console.log("--DELETE album from band");
 	const body = req.body;
 	try {
-		const band = await prisma.band.update({
-			where: {
-				band_id: body.bandId
+		// const band = await prisma.album.update({
+		// 	where: {
+		// 		album_id: body.albumId
+		// 	},
+		// 	data: {
+		// 		// album_band: {
+		// 		// 	deleteMany: {
+		// 		// 		album_id: body.albumId
+		// 		// 	}
+		// 		// }
+		// 		album_band: {
+		// 			disconnect: {
+		// 				id: body.bandId
+		// 			}
+		// 		}
+		// 	}
+		// });
+
+		const band = await prisma.album_band.upsert({
+			create: {
+
 			},
-			data: {
-				album_band: {
-					deleteMany: {
-						album_id: body.albumId
-					}
-				}
+			update: {
+
+			},
+			where: {
+
 			}
-		});
+		})
 
 		res.status(201).json({
 			message: "success",
