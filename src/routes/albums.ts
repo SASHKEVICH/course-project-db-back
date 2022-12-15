@@ -4,8 +4,6 @@ import sendResult from "../helpers/sendResult";
 import selectInfo from "../helpers/selectInfo";
 import auth from "../middleware/auth";
 import prisma from "../database/prisma";
-import { transformDocument } from "@prisma/client/runtime";
-import { brotliDecompress } from "zlib";
 
 const router = Router();
 
@@ -162,21 +160,43 @@ router.post("/add-to-disc", auth, async (req, res) => {
 	console.log("--POST add album to band");
 	const body = req.body;
 	try {
-		const album = await prisma.album_band.upsert({
-			create: {
-				album_id: body.albumId,
-				band_id: body.bandId
-			},
-			update: {
-				band_id: body.bandId
-			},
+		const albumBandId = await prisma.album_band.findFirst({
 			where: {
-				album_id_band_id: {
-					album_id: body.albumId,
-					band_id: body.bandId
-				}
+				album_id: body.albumId
 			},
+			select: {
+				album_id: true,
+				band_id: true
+			}
 		});
+
+		let album = {};
+
+		if (albumBandId) {
+			album = await prisma.album_band.update({
+				data: {
+					band_id: body.bandId
+				},
+				where: {
+					album_id_band_id: albumBandId
+				}
+			})
+		} else {
+			album = await prisma.album_band.create({
+				data: {
+					album: {
+						connect: {
+							album_id: body.albumId
+						}
+					},
+					band: {
+						connect: {
+							band_id: body.bandId
+						}
+					}
+				}
+			})
+		};
 
 		res.status(201).json({
 			message: "success",
@@ -184,13 +204,10 @@ router.post("/add-to-disc", auth, async (req, res) => {
 		});
 	} catch (error) {
 		console.error(error)
-		if (error instanceof Prisma.PrismaClientValidationError) {
-			console.log(error.message)
-			res.status(400).json({
-				message: "failure",
-				error: error
-			})
-    };
+		res.status(400).json({
+			message: "failure",
+			error: error
+		})
 	}
 });
 
