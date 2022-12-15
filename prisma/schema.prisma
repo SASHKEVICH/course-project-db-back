@@ -87,7 +87,7 @@ model genre_band {
   band     band?  @relation(fields: [band_id], references: [band_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_band_id")
   genre    genre? @relation(fields: [genre_id], references: [genre_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_genre_id")
 
-  @@id([band_id, genre_id])
+  @@id([genre_id, band_id])
   @@map("genre/band")
 }
 
@@ -129,7 +129,7 @@ model social_media_band {
   band            band?         @relation(fields: [band_id], references: [band_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_band_id")
   social_media    social_media? @relation(fields: [social_media_id], references: [social_media_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_social_media_id")
 
-  @@id([band_id, social_media_id])
+  @@id([social_media_id, band_id])
   @@map("social_media/band")
 }
 
