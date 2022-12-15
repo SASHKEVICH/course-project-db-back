@@ -127,11 +127,15 @@ router.get("/:id/discography", async (req, res) => {
 /* GET all bands */
 router.get("/", auth, async (req, res) => {
 	console.log("--GET all bands");
-	const bands = await prisma.band.findMany();
-	res.status(200).json({
-		message: "success",
-		bands
-	});
+	const sqlQuery = `
+		SELECT band.*, genre.name AS genre
+		FROM band
+		LEFT JOIN "genre/band" bdgenre ON bdgenre.band_id = band.band_id
+		LEFT JOIN genre ON genre.genre_id = bdgenre.genre_id
+	`;
+
+	const bands = await selectInfo(sqlQuery, [""]);
+	sendResult(res, bands);
 });
 
 /* ADD genre to band */
@@ -139,18 +143,43 @@ router.post("/add-genre", auth, async (req, res) => {
 	console.log("--POST add genre to band");
 	const body = req.body;
 	try {
-		const band = await prisma.band.update({
+		const genreBandId = await prisma.genre_band.findFirst({
 			where: {
 				band_id: body.bandId
 			},
-			data: {
-				genre_band: {
-					create: {
-						genre_id: body.genreId,
-					}
-				}
+			select: {
+				genre_id: true,
+				band_id: true
 			}
 		});
+
+		let band = {};
+
+		if (genreBandId) {
+			band = await prisma.genre_band.update({
+				data: {
+					genre_id: body.genreId
+				},
+				where: {
+					genre_id_band_id: genreBandId
+				}
+			})
+		} else {
+			band = await prisma.genre_band.create({
+				data: {
+					genre: {
+						connect: {
+							genre_id: body.genreId
+						}
+					},
+					band: {
+						connect: {
+							band_id: body.bandId
+						}
+					}
+				}
+			})
+		};
 
 		res.status(201).json({
 			message: "success",
@@ -158,45 +187,10 @@ router.post("/add-genre", auth, async (req, res) => {
 		});
 	} catch (error) {
 		console.error(error)
-		if (error instanceof Prisma.PrismaClientValidationError) {
-			res.status(400).json({
-				message: "failure",
-				error: error
-			})
-    };
-	}
-});
-
-/* DELETE genre from band */
-router.post("/delete-genre", auth, async (req, res) => {
-	console.log("--POST delete genre from band");
-	const body = req.body;
-	try {
-		const band = await prisma.band.update({
-			where: {
-				band_id: body.bandId
-			},
-			data: {
-				genre_band: {
-					deleteMany: {
-						genre_id: body.genreId,
-					}
-				}
-			}
-		});
-
-		res.status(201).json({
-			message: "success",
-			band
-		});
-	} catch (error) {
-		console.error(error)
-		if (error instanceof Prisma.PrismaClientValidationError) {
-			res.status(400).json({
-				message: "failure",
-				error: error
-			})
-    };
+		res.status(400).json({
+			message: "failure",
+			error: error
+		})
 	}
 });
 
@@ -263,14 +257,15 @@ router.put("/", auth, async (req, res) => {
 	}
 });
 
-/* DELETE band */
+/* DELETE bands */
 router.delete("/", auth, async (req, res) => {
-	console.log("--DELETE band");
+	console.log("--DELETE bands");
 	const body = req.body;
+	const ids: number[] = body.genreIds
 	try {
-		const band = await prisma.band.delete({
+		const band = await prisma.band.deleteMany({
 			where: {
-				band_id: body.bandId
+				band_id: { in: ids }
 			}
 		});
 
