@@ -128,7 +128,8 @@ router.post("/add-to-band", auth, async (req, res) => {
 		if (memberBandId) {
 			member = await prisma.member_band.update({
 				data: {
-					band_id: body.bandId
+					band_id: body.bandId,
+					previous: false
 				},
 				where: {
 					band_id_member_id: memberBandId
@@ -146,7 +147,8 @@ router.post("/add-to-band", auth, async (req, res) => {
 						connect: {
 							band_id: body.bandId
 						}
-					}
+					},
+					previous: false
 				}
 			})
 		};
