@@ -233,7 +233,6 @@ router.delete("/", auth, async (req, res) => {
 	console.log("--DELETE member");
 	const body = req.body;
 	try {
-		const member = await prisma.member.delete({
 		const member = await prisma.member.deleteMany({
 			where: {
 				member_id: { in: body.memberIds }
