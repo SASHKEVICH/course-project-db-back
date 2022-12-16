@@ -49,7 +49,7 @@ router.get("/:id", async (req, res) => {
 		LEFT JOIN album ON album.album_id = alband.album_id
 		LEFT JOIN album_type ON album.type = album_type.album_type_id
 		WHERE band.band_id = $1
-		ORDER BY alband.order ASC
+		ORDER BY album.released ASC
 	`;
 
 	const selectGenres = `
