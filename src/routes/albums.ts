@@ -90,10 +90,12 @@ router.get("/:id", async (req, res, next) => {
 router.get("/", auth, async (req, res, next) => {
 	console.log("GET all albums")
 	let sqlQuery = `
-		SELECT album.*, band.title AS band, album_type.type AS type
+		SELECT album.*, band.title AS band, album_type.type AS type, genre.name AS genre
 		FROM album
 		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
+		LEFT JOIN "genre/album" genalbum ON genalbum.album_id = album.album_id
 		LEFT JOIN band ON band.band_id = alband.band_id
+		LEFT JOIN genre ON genre.genre_id = genalbum.genre_id
 		LEFT JOIN album_type on album.type = album_type.album_type_id
 	`;
 
@@ -273,51 +275,43 @@ router.post("/add-genre", auth, async (req, res) => {
 	console.log("--POST add genre to album");
 	const body = req.body;
 	try {
-		const album = await prisma.album.update({
+		const albumGenreId = await prisma.genre_album.findFirst({
 			where: {
 				album_id: body.albumId
 			},
-			data: {
-				genre_album: {
-					create: {
-						genre_id: body.genreId,
-					}
-				}
+			select: {
+				album_id: true,
+				genre_id: true
 			}
 		});
 
-		res.status(201).json({
-			message: "success",
-			album
-		});
-	} catch (error) {
-		console.error(error)
-		if (error instanceof Prisma.PrismaClientValidationError) {
-			res.status(400).json({
-				message: "failure",
-				error: error
+		let album = {};
+
+		if (albumGenreId) {
+			album = await prisma.genre_album.update({
+				data: {
+					genre_id: body.genreId
+				},
+				where: {
+					album_id_genre_id: albumGenreId
+				}
 			})
-    };
-	}
-});
-
-/* DELETE genre from album */
-router.post("/delete-genre", auth, async (req, res) => {
-	console.log("--POST delete genre from band");
-	const body = req.body;
-	try {
-		const album = await prisma.album.update({
-			where: {
-				album_id: body.albumId
-			},
-			data: {
-				genre_album: {
-					deleteMany: {
-						genre_id: body.genreId,
+		} else {
+			album = await prisma.genre_album.create({
+				data: {
+					album: {
+						connect: {
+							album_id: body.albumId
+						}
+					},
+					genre: {
+						connect: {
+							genre_id: body.genreId
+						}
 					}
 				}
-			}
-		});
+			})
+		};
 
 		res.status(201).json({
 			message: "success",
