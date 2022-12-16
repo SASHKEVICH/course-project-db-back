@@ -96,12 +96,16 @@ router.get("/:id/bio", async (req, res, next) => {
 
 /* GET all members */
 router.get("/", auth, async (req, res) => {
-	console.log("--GET all members");
-	const bands = await prisma.member.findMany();
-	res.status(200).json({
-		message: "success",
-		bands
-	});
+	console.log("--GET all members")
+	let sqlQuery = `
+		SELECT member.*, band.title AS band
+		FROM member
+		LEFT JOIN "member/band" memband ON memband.member_id = member.member_id
+		LEFT JOIN band ON band.band_id = memband.band_id
+	`;
+
+	const albums = await selectInfo(sqlQuery, [""]);
+	sendResult(res, albums);
 });
 
 /* ADD member to band */
@@ -109,53 +113,43 @@ router.post("/add-to-band", auth, async (req, res) => {
 	console.log("--POST add member to band");
 	const body = req.body;
 	try {
-		const member = await prisma.member.update({
+		const memberBandId = await prisma.member_band.findFirst({
 			where: {
 				member_id: body.memberId
 			},
-			data: {
-				member_band: {
-					create: {
-						band_id: body.bandId,
-						previous: body.previous ?? false
-					}
-				}
+			select: {
+				member_id: true,
+				band_id: true
 			}
 		});
 
-		res.status(201).json({
-			message: "success",
-			member
-		});
-	} catch (error) {
-		console.error(error)
-		if (error instanceof Prisma.PrismaClientValidationError) {
-			console.log(error.message)
-			res.status(400).json({
-				message: "failure",
-				error: error
+		let member = {};
+
+		if (memberBandId) {
+			member = await prisma.member_band.update({
+				data: {
+					band_id: body.bandId
+				},
+				where: {
+					band_id_member_id: memberBandId
+				}
 			})
-    };
-	}
-});
-
-/* DELETE album from band's discography */
-router.delete("/del-from-disc", auth, async (req, res) => {
-	console.log("--DELETE album from band");
-	const body = req.body;
-	try {
-		const member = await prisma.member.update({
-			where: {
-				member_id: body.memberId
-			},
-			data: {
-				member_band: {
-					deleteMany: {
-						band_id: body.bandId
+		} else {
+			member = await prisma.member_band.create({
+				data: {
+					member: {
+						connect: {
+							member_id: body.memberId
+						}
+					},
+					band: {
+						connect: {
+							band_id: body.bandId
+						}
 					}
 				}
-			}
-		});
+			})
+		};
 
 		res.status(201).json({
 			message: "success",
@@ -240,8 +234,9 @@ router.delete("/", auth, async (req, res) => {
 	const body = req.body;
 	try {
 		const member = await prisma.member.delete({
+		const member = await prisma.member.deleteMany({
 			where: {
-				member_id: body.memberId
+				member_id: { in: body.memberIds }
 			}
 		});
 
