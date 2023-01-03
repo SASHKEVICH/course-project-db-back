@@ -14,5 +14,25 @@ services:
       - "4000"
     ports:
       - ${PORT}:${PORT}
+    networks:
+      - api
+    depends_on:
+      - postgres
     command: npm run dev
+    
+  postgres:
+    image: postgres:15.1
+    container_name: ehm-postgres
+    env_file: .env
+    networks:
+      - api
+    ports:
+      - 5432:5432
+    volumes:
+      - pg_data:/var/lib/postgres/data
+    restart: unless-stopped
 
+networks:
+  api:
+volumes:
+  pg_data:
