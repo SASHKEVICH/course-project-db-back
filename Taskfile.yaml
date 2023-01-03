@@ -3,14 +3,15 @@
 version: '3'
 
 tasks:
-  dev_debug: 
+  run-dev: 
     cmds:
-      - npx tsc
-      - npx nodemon -r dotenv/config ./src/app.ts
-    silent: true
+      - docker compose up -d 
 
-  prod_start:
+  run-prod: 
     cmds:
-      - npx tsc
-      - node -r dotenv/config ./build/app.js
-    silent: true
+      - docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+  down: 
+    cmds:
+      - docker compose down
+
