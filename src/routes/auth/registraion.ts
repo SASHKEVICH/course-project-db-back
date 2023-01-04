@@ -1,5 +1,8 @@
-import { Router } from "express";
+import { Router, Response } from "express";
 import { PrismaClient } from '@prisma/client';
+import { AuthError } from "../../types/errors/auth/authError";
+import { AuthErrorCodes } from "../../types/errors/auth/authErrorCodes";
+
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -7,19 +10,20 @@ const router = Router();
 const prisma = new PrismaClient()
 const saltRounds = 10;
 
-router.post("/registration", async (req, res) => {
+router.post("/", async (req, res) => {
 	console.log("--POST register");
 	try {
 		const { name, nickname, email, password } = req.body;
 		if (!(email && password && name)) {
-      return res.status(400).send("All input is required");
+			throw new AuthError("All input is required", AuthErrorCodes.allInputRequired);
     };
 
 		const oldUser = await prisma.user.findUnique({
 			where: { email: email }
 		});
+
 		if (oldUser) {
-      return res.status(409).send("User Already Exist. Please Login");
+			throw new AuthError("User already exist. Please login", AuthErrorCodes.userAlreadyExists);
     };
 		
 		const encryptedPassword = await bcrypt.hash(password, saltRounds);
@@ -32,7 +36,7 @@ router.post("/registration", async (req, res) => {
 			}
 		});
 
-		const tokenKey = process.env.TOKEN_KEY ?? "";
+		const tokenKey = process.env.TOKEN_KEY ?? "odfjgkdnfuhasidj";
 		const token = jwt.sign(
 			{ user_id: user.user_id, email },
 			tokenKey,
@@ -42,8 +46,15 @@ router.post("/registration", async (req, res) => {
 
 		res.status(201).json({userId: user.user_id, token: user.token});
 	} catch (error) {
+		sendError(res, error as AuthError);
 		console.log(error);
 	}
 });
 
+function sendError(res: Response, error: AuthError) {
+	res.status(error.code).json({
+		error: "failure",
+		message: error.message
+	});
+}
 export default router;

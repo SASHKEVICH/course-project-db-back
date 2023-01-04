@@ -1,22 +1,29 @@
-import { Router } from "express";
+import { Router, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { AuthError } from "../../types/errors/auth/authError"
+import { AuthErrorCodes } from "../../types/errors/auth/authErrorCodes";
+
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const router = Router();
 const prisma = new PrismaClient();
 
-router.post("/login", async (req, res) => {
+router.post("/", async (req, res) => {
 	console.log("--POST login")
 	try {
 		const { email, password } = req.body;
 		if (!(email && password)) {
-      res.status(400).send("All input is required");
+			throw new AuthError("All input is required", AuthErrorCodes.allInputRequired);
     };
 
 		const user = await prisma.user.findUnique({
 			where: { email: email }
 		});
+
+		if (!user) {
+			throw new AuthError("No user found", AuthErrorCodes.invalidCredentials);
+		}
 		
 		const isPasswordsCompared = await bcrypt.compare(password, user?.password ?? "");
 		if (user && isPasswordsCompared) {
@@ -34,11 +41,18 @@ router.post("/login", async (req, res) => {
 				token: user.token
 			});
 		};
-		res.status(400).json({message: "Invalid credentials"});
 	} catch (error) {
+		sendError(res, error as AuthError);
 		console.log(error);
 	}
 });
+
+function sendError(res: Response, error: AuthError) {
+	res.status(error.code).json({
+		error: "failure",
+		message: error.message
+	});
+}
 
 export default router;
 
