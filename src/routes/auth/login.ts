@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { LoginError } from "../../types/errors/loginErrors"
+import { AuthError } from "../../types/errors/auth/authError"
+import { AuthErrorCodes } from "../../types/errors/auth/authErrorCodes";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 
 import bcrypt from "bcrypt";
@@ -14,12 +15,16 @@ router.post("/", async (req, res) => {
 	try {
 		const { email, password } = req.body;
 		if (!(email && password)) {
-			throw new LoginError("All input is required");
+			throw new AuthError("All input is required", AuthErrorCodes.allInputRequired);
     };
 
-		const user = await prisma.user.findUniqueOrThrow({
+		const user = await prisma.user.findUnique({
 			where: { email: email }
 		});
+
+		if (!user) {
+			throw new AuthError("No user found", AuthErrorCodes.invalidCredentials);
+		}
 		
 		const isPasswordsCompared = await bcrypt.compare(password, user?.password ?? "");
 		if (user && isPasswordsCompared) {
@@ -38,17 +43,15 @@ router.post("/", async (req, res) => {
 			});
 		};
 	} catch (error) {
-		sendError(res, error as Error);
+		sendError(res, error as AuthError);
 		console.log(error);
 	}
 });
 
-function sendError(res: Response, error: LoginError | PrismaClientKnownRequestError) {
-	type someLoginError = LoginError | PrismaClientKnownRequestError;
-	const sendingMessage: string = error as someLoginError ? error.message : "Something went wrong"
-	res.status(400).json({
+function sendError(res: Response, error: AuthError) {
+	res.status(error.code).json({
 		error: "failure",
-		message: sendingMessage
+		message: error.message
 	});
 }
 

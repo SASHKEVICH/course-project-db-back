@@ -8,8 +8,8 @@ import socialMediaRouter from "./routes/socialMedias"
 import membersRouter from "./routes/members"
 import searchRouter from "./routes/search"
 
-import registrationRouter from "./routes/user/registraion"
-import loginRouter from "./routes/user/login"
+import registrationRouter from "./routes/auth/registraion"
+import loginRouter from "./routes/auth/login"
 
 const app: Express = express();
 const port = process.env.PORT;
