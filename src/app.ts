@@ -1,5 +1,4 @@
 import express, { Express, Request, Response } from "express";
-const port = process.env.PORT;
 
 import albumsRouter from "./routes/albums"
 import songsRouter from "./routes/songs"
@@ -9,10 +8,11 @@ import socialMediaRouter from "./routes/socialMedias"
 import membersRouter from "./routes/members"
 import searchRouter from "./routes/search"
 
-import registerRouter from "./routes/user/register"
+import registrationRouter from "./routes/user/registraion"
 import loginRouter from "./routes/user/login"
 
 const app: Express = express();
+const port = process.env.PORT;
 
 app.use(express.json());
 
@@ -23,11 +23,11 @@ app.use("/genres", genresRouter);
 app.use("/social_media", socialMediaRouter);
 app.use("/members", membersRouter);
 app.use("/search", searchRouter);
-app.use("/", registerRouter);
-app.use("/", loginRouter);
+app.use("/registration", registrationRouter);
+app.use("/login", loginRouter);
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use(function (req: Request, res: Response, next) {
 	next();
 });
 
