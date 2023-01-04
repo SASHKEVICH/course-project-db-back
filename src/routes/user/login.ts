@@ -1,20 +1,23 @@
-import { Router } from "express";
+import { Router, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { LoginError } from "../../types/errors/loginErrors"
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
+
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const router = Router();
 const prisma = new PrismaClient();
 
-router.post("/login", async (req, res) => {
+router.post("/", async (req, res) => {
 	console.log("--POST login")
 	try {
 		const { email, password } = req.body;
 		if (!(email && password)) {
-      res.status(400).send("All input is required");
+			throw new LoginError("All input is required");
     };
 
-		const user = await prisma.user.findUnique({
+		const user = await prisma.user.findUniqueOrThrow({
 			where: { email: email }
 		});
 		
@@ -34,11 +37,20 @@ router.post("/login", async (req, res) => {
 				token: user.token
 			});
 		};
-		res.status(400).json({message: "Invalid credentials"});
 	} catch (error) {
+		sendError(res, error as Error);
 		console.log(error);
 	}
 });
+
+function sendError(res: Response, error: LoginError | PrismaClientKnownRequestError) {
+	type someLoginError = LoginError | PrismaClientKnownRequestError;
+	const sendingMessage: string = error as someLoginError ? error.message : "Something went wrong"
+	res.status(400).json({
+		error: "failure",
+		message: sendingMessage
+	});
+}
 
 export default router;
 
