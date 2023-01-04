@@ -2,7 +2,6 @@ import { Router, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { AuthError } from "../../types/errors/auth/authError"
 import { AuthErrorCodes } from "../../types/errors/auth/authErrorCodes";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
