@@ -36,3 +36,6 @@ POSTGRES_USER= \
 POSTGRES_PASSWORD= \
 POSTGRES_DB=name_of_your_db \
 DATABASE_URL="postgresql://postgres:postgres@postgres:5432/${POSTGRES_DB}?schema=public" \
+
+## Mobile
+Link to [mobile](https://github.com/SASHKEVICH/EHM) this app uses.
