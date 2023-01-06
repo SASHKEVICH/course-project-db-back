@@ -1,54 +1,21 @@
 import { Router } from "express";
 import { Prisma } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
-import select, { selectMany } from "../helpers/selectInfo";
+import sendError from "../helpers/sendError";
+import { selectMany } from "../helpers/selectInfo";
 import prisma from "../database/prisma";
 import auth from "../middleware/auth"
 
 import { ResponseSong } from "../types/song/responseSong";
-import { SelectError } from "../types/errors/select/selectError";
-import { SelectErrorCodes } from "../types/errors/select/selectError";
-import sendError from "../helpers/sendError";
+import { SelectError, SelectErrorCodes } from "../types/errors/select/selectError";
 
 const router = Router();
-
-/* GET songs in album by title and band*/
-router.get("/album=:title&band=:band", async (req, res) => {
-	// @ts-ignore
-	const album: string = req.params.title.replace(/-/g, " ");
-	// @ts-ignore
-	const band: string = req.params.band.replace(/-/g, " ");
-
-	const selectAlbumId = `
-		SELECT album.album_id 
-		FROM album
-		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
-		LEFT JOIN band ON band.band_id = alband.band_id
-		WHERE strpos(lower(album.title), lower($1)) > 0 
-			AND strpos(lower(band.title), lower($2)) > 0
-	`;
-
-	const selectSongs = `
-		SELECT song.song_id, song.title AS song, album.title AS album
-		FROM album
-		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
-		LEFT JOIN song ON song.song_id = alsong.song_id
-		WHERE album.album_id = $1
-		ORDER BY alsong.order ASC
-	`;
-
-	const albums = await select(selectAlbumId, [album, band]);
-	//@ts-ignore
-	const albumId = albums.info?.map((e) => e.album_id)[0];
-	const songs = await select(selectSongs, albumId);
-	sendResult(res, songs);
-});
 
 /* GET songs in album by id*/
 router.get("/albumId=:album_id", async (req, res) => {
 	console.log("--GET songs in album");
 	const albumId = req.params.album_id;
-	const selectSongs = `
+	const selectSongsQuery = `
 		SELECT 
 			song.song_id, 
 			song.duration,
@@ -68,14 +35,14 @@ router.get("/albumId=:album_id", async (req, res) => {
 
 	try {
 		try {
-			const songs = await selectMany<ResponseSong>(selectSongs, [albumId]);
+			const songs = await selectMany<ResponseSong>(selectSongsQuery, [albumId]);
 			sendResult(res, songs);
 		} catch (e) {
-			throw new SelectError("No songs found", SelectErrorCodes.notFoundAlbum);
+			throw new SelectError("No songs found", SelectErrorCodes.notFoundSong);
 		}
 	} catch (error) {
 		sendError(res, error as SelectError);
-		console.log(error);
+		console.error(error);
 	}
 });
 
@@ -84,15 +51,31 @@ router.get("/albumId=:album_id", async (req, res) => {
 /* GET all songs */
 router.get("/", auth, async (req, res) => {
 	console.log("--GET all songs");
-	let sqlQuery = `
-		SELECT song.*, album.title AS album, alsong.order AS order
+	const selectSongsQuery = `
+		SELECT 
+			song.*,
+			alsong.order AS order,
+			json_agg(json_build_object(
+				'album_id', album.album_id,
+				'title', album.title
+			)) as album
 		FROM song
 		LEFT JOIN "album/song" alsong ON alsong.song_id = song.song_id
 		LEFT JOIN album ON album.album_id = alsong.album_id
+		GROUP BY song.song_id, alsong.order
 	`;
 
-	const songs = await select(sqlQuery, [""]);
-	sendResult(res, songs);
+	try {
+		try {
+			const songs = await selectMany<ResponseSong>(selectSongsQuery, [""]);
+			sendResult(res, songs);
+		} catch (e) {
+			throw new SelectError("No songs found", SelectErrorCodes.notFoundSong);
+		}
+	} catch (error) {
+		sendError(res, error as SelectError);
+		console.error(error);
+	}
 });
 
 /* ADD song to album */

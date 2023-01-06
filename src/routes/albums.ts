@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Prisma, album, genre } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import sendError from "../helpers/sendError";
 import { selectMany, selectOne } from "../helpers/selectInfo";
