@@ -1,27 +1,15 @@
 import { Router } from "express";
-import { Prisma } from "@prisma/client";
+import { Prisma, album, genre } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
-import selectInfo from "../helpers/selectInfo";
+import sendError from "../helpers/sendError";
+import { selectMany, selectOne } from "../helpers/selectInfo";
 import auth from "../middleware/auth";
 import prisma from "../database/prisma";
 
+import { ResponseAlbum } from "../types/album/responseAlbum";
+import { SelectError, SelectErrorCodes } from "../types/errors/select/selectError";
+
 const router = Router();
-
-/* GET album by title */
-router.get("/title=:title", async (req, res, next) => {
-	const title: string = req.params.title.replace(/-/g, " ");
-
-	let sqlQuery = `
-		SELECT album.*, band.title AS band
-		FROM album 
-		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
-		LEFT JOIN band ON band.band_id = alband.band_id
-		WHERE strpos(lower(album.title), lower($1)) > 0
-	`;
-
-	const album = await selectInfo(sqlQuery, [title]);
-	sendResult(res, album);
-});
 
 /* GET types */
 router.get("/types", auth, async (req, res) => { 
@@ -40,9 +28,9 @@ router.get("/types", auth, async (req, res) => {
 });
 
 /* GET album by id */
-router.get("/:id", async (req, res, next) => {
+router.get("/one/:id", async (req, res, next) => {
 	const id = req.params.id;
-	const sqlQuery = `
+	const selectAlbum = `
 		SELECT 
 			album.album_id,
 			album.title AS title,
@@ -51,56 +39,68 @@ router.get("/:id", async (req, res, next) => {
 			album.explicit AS explicit,
 			album.history AS history,
 			album_type.type AS type,
-			band.title AS band
+			band.title AS band,
+			json_agg(json_build_object(
+				'genre_id', genre.genre_id,
+				'genre', genre.name
+			)) as genres
 		FROM album
 		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
 		LEFT JOIN band ON band.band_id = alband.band_id
 		LEFT JOIN album_type ON album_type.album_type_id = album.type
+		LEFT JOIN "genre/album" genalbum ON genalbum.album_id = album.album_id
+		LEFT JOIN genre ON genre.genre_id = genalbum.genre_id
 		WHERE album.album_id = $1
+		GROUP BY album.album_id, band.title, album_type.type
 	`;
 
-	const selectGenres = `
-		SELECT genre.name AS genre
-		FROM album
-		LEFT JOIN "genre/album" algenre ON algenre.album_id = album.album_id
-		LEFT JOIN genre ON genre.genre_id = algenre.genre_id
-		WHERE album.album_id = $1
-	`
-
-	const album = await selectInfo(sqlQuery, [id]);
-	const genres = await selectInfo(selectGenres, [id]);
-
-	const genresArray: String[] = []
-	genres.info?.forEach((elem) => {genresArray.push(elem['genre'])})
-
-	// @ts-ignore
-	const info = album.info[0];
-	const mergedAlbum = {
-		...info,
-		genres: genresArray
-	}
-	album.info = mergedAlbum
-
-	sendResult(res, album);
+	try {
+		try {
+			const responseAlbum: ResponseAlbum = await selectOne<ResponseAlbum>(selectAlbum, [id]);
+			sendResult(res, responseAlbum);
+		} catch (e) {
+			throw new SelectError("Album not found", SelectErrorCodes.notFoundAlbum);
+		}
+	} catch (error) {
+		sendError(res, error as SelectError);
+		console.log(error)
+	}	
 });
 
 /* BELOW USES TOKENS */
 
 /* GET all albums */
-router.get("/", auth, async (req, res, next) => {
-	console.log("GET all albums")
-	let sqlQuery = `
-		SELECT album.*, band.title AS band, album_type.type AS type, genre.name AS genre
+router.get("/all", auth, async (req, res, next) => {
+	console.log("--GET all albums")
+	const selectAlbums = `
+		SELECT 
+			album.*, 
+			band.title AS band, 
+			album_type.type AS type, 
+			json_agg(json_build_object(
+				'genre_id', genre.genre_id,
+				'genre', genre.name
+			)) as genres
 		FROM album
 		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
 		LEFT JOIN "genre/album" genalbum ON genalbum.album_id = album.album_id
 		LEFT JOIN band ON band.band_id = alband.band_id
 		LEFT JOIN genre ON genre.genre_id = genalbum.genre_id
 		LEFT JOIN album_type on album.type = album_type.album_type_id
+		GROUP BY album.album_id, band.title, album_type.type
 	`;
 
-	const albums = await selectInfo(sqlQuery, [""]);
-	sendResult(res, albums);
+	try {
+		try {
+			const albums: ResponseAlbum[] = await selectMany<ResponseAlbum>(selectAlbums);
+			sendResult(res, albums);
+		} catch (e) {
+			throw new SelectError("No albums found", SelectErrorCodes.notFoundAlbum);
+		}
+	} catch (error) {
+		sendError(res, error as SelectError);
+		console.log(error);
+	}	
 });
 
 /* GET songs in album by id*/
