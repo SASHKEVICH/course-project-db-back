@@ -6,7 +6,7 @@ import { selectMany, selectOne } from "../helpers/selectInfo";
 import auth from "../middleware/auth";
 import prisma from "../database/prisma";
 
-import { ResponseAlbum } from "../types/album/responseAlbum";
+import { AlbumCodes, ResponseAlbum } from "../types/album/responseAlbum";
 import { SelectError, SelectErrorCodes } from "../types/errors/select/selectError";
 
 const router = Router();
@@ -16,13 +16,13 @@ router.get("/types", auth, async (req, res) => {
 	console.log("--GET album types");
 	try {
 		const types = await prisma.album_type.findMany();
-		res.status(200).json({
+		res.status(AlbumCodes.Success).json({
 			message: "success",
 			types
 		});
 	} catch (error) {
-		res.status(400).json({
-			message: "failure",
+		res.status(AlbumCodes.Failure).json({
+			message: "failure"
 		})
 	}
 });
@@ -63,7 +63,7 @@ router.get("/one/:id", async (req, res, next) => {
 		}
 	} catch (error) {
 		sendError(res, error as SelectError);
-		console.log(error)
+		console.error(error)
 	}	
 });
 
@@ -99,31 +99,8 @@ router.get("/all", auth, async (req, res, next) => {
 		}
 	} catch (error) {
 		sendError(res, error as SelectError);
-		console.log(error);
+		console.error(error);
 	}	
-});
-
-/* GET songs in album by id*/
-router.get("/songs/albumId=:album_id", auth, async (req, res) => {
-	const albumId = req.params.album_id;
-
-	const selectSongs = `
-		SELECT 
-			song.song_id, 
-			song.duration, 
-			album.album_id,
-			song.title AS title,
-			song.explicit,
-			album.title AS album
-		FROM album
-		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
-		LEFT JOIN song ON song.song_id = alsong.song_id
-		WHERE album.album_id = $1
-		ORDER BY alsong.order ASC
-	`;
-
-	const songs = await selectInfo(selectSongs, [albumId]);
-	sendResult(res, songs);
 });
 
 /* CREATE album */
@@ -142,14 +119,14 @@ router.post("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(201).json({
+		res.status(AlbumCodes.Success).json({
 			message: "success",
 			album
 		});
 	} catch (error) {
 		console.error(error)
 		if (error instanceof Prisma.PrismaClientUnknownRequestError) {
-			res.status(400).json({
+			res.status(AlbumCodes.Failure).json({
 				message: "failure",
 				error: error.message
 			})
@@ -200,13 +177,13 @@ router.post("/add-to-disc", auth, async (req, res) => {
 			})
 		};
 
-		res.status(201).json({
+		res.status(AlbumCodes.Success).json({
 			message: "success",
 			album
 		});
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(AlbumCodes.Failure).json({
 			message: "failure",
 			error: error
 		})
@@ -232,13 +209,13 @@ router.put("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(201).json({
+		res.status(AlbumCodes.Success).json({
 			message: "success",
 			album
 		});
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(AlbumCodes.Failure).json({
 			message: "failure",
 			error: "updating error"
 		})
@@ -257,13 +234,13 @@ router.delete("/", auth, async (req, res) => {
 			},
 		});
 
-		res.status(201).json({
+		res.status(AlbumCodes.Success).json({
 			message: "success",
 			album
 		});
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(AlbumCodes.Failure).json({
 			message: "failure",
 			error: "deleting error"
 		})
@@ -313,14 +290,14 @@ router.post("/add-genre", auth, async (req, res) => {
 			})
 		};
 
-		res.status(201).json({
+		res.status(AlbumCodes.Success).json({
 			message: "success",
 			album
 		});
 	} catch (error) {
 		console.error(error)
 		if (error instanceof Prisma.PrismaClientValidationError) {
-			res.status(400).json({
+			res.status(AlbumCodes.Failure).json({
 				message: "failure",
 				error: error
 			})
