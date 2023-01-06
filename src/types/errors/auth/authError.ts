@@ -1,11 +1,16 @@
-import { AuthErrorCodes } from "./authErrorCodes";
+import { BackendError } from "../backendError";
 
-export class AuthError extends Error {
-	message: string;
+export enum AuthErrorCodes {
+	invalidCredentials = 511,
+	allInputRequired = 512,
+	userAlreadyExists = 513,
+}
+
+export class AuthError extends BackendError {
 	code: AuthErrorCodes;
 
 	constructor(message: string, code: AuthErrorCodes) {
-		super()
+		super(message, code);
 		this.message = message;
 		this.code = code;
 	}
