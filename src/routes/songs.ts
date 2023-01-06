@@ -1,9 +1,14 @@
 import { Router } from "express";
 import { Prisma } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
-import selectInfo from "../helpers/selectInfo";
+import select, { selectMany } from "../helpers/selectInfo";
 import prisma from "../database/prisma";
 import auth from "../middleware/auth"
+
+import { ResponseSong } from "../types/song/responseSong";
+import { SelectError } from "../types/errors/select/selectError";
+import { SelectErrorCodes } from "../types/errors/select/selectError";
+import sendError from "../helpers/sendError";
 
 const router = Router();
 
@@ -32,33 +37,46 @@ router.get("/album=:title&band=:band", async (req, res) => {
 		ORDER BY alsong.order ASC
 	`;
 
-	const albums = await selectInfo(selectAlbumId, [album, band]);
+	const albums = await select(selectAlbumId, [album, band]);
+	//@ts-ignore
 	const albumId = albums.info?.map((e) => e.album_id)[0];
-	const songs = await selectInfo(selectSongs, albumId);
+	const songs = await select(selectSongs, albumId);
 	sendResult(res, songs);
 });
 
 /* GET songs in album by id*/
 router.get("/albumId=:album_id", async (req, res) => {
+	console.log("--GET songs in album");
 	const albumId = req.params.album_id;
-
 	const selectSongs = `
 		SELECT 
 			song.song_id, 
-			song.duration, 
-			album.album_id,
+			song.duration,
 			song.title AS title,
 			song.explicit,
-			album.title AS album
+			json_agg(json_build_object(
+				'album_id', album.album_id,
+				'title', album.title
+			)) as album
 		FROM album
 		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
 		LEFT JOIN song ON song.song_id = alsong.song_id
 		WHERE album.album_id = $1
+		GROUP BY song.song_id, alsong.order
 		ORDER BY alsong.order ASC
 	`;
 
-	const songs = await selectInfo(selectSongs, [albumId]);
-	sendResult(res, songs);
+	try {
+		try {
+			const songs = await selectMany<ResponseSong>(selectSongs, [albumId]);
+			sendResult(res, songs);
+		} catch (e) {
+			throw new SelectError("No songs found", SelectErrorCodes.notFoundAlbum);
+		}
+	} catch (error) {
+		sendError(res, error as SelectError);
+		console.log(error);
+	}
 });
 
 /* BELOW USES TOKENS */
@@ -73,7 +91,7 @@ router.get("/", auth, async (req, res) => {
 		LEFT JOIN album ON album.album_id = alsong.album_id
 	`;
 
-	const songs = await selectInfo(sqlQuery, [""]);
+	const songs = await select(sqlQuery, [""]);
 	sendResult(res, songs);
 });
 
