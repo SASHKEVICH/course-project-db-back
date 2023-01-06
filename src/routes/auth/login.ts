@@ -1,7 +1,7 @@
 import { Router, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { AuthError } from "../../types/errors/auth/authError"
-import { AuthErrorCodes } from "../../types/errors/auth/authErrorCodes";
+import sendError from "../../helpers/sendError";
+import { AuthError, AuthErrorCodes } from "../../types/errors/auth/authError"
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -46,13 +46,6 @@ router.post("/", async (req, res) => {
 		console.log(error);
 	}
 });
-
-function sendError(res: Response, error: AuthError) {
-	res.status(error.code).json({
-		error: "failure",
-		message: error.message
-	});
-}
 
 export default router;
 
