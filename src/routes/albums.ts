@@ -6,8 +6,8 @@ import { selectMany, selectOne } from "../helpers/selectInfo";
 import auth from "../middleware/auth";
 import prisma from "../database/prisma";
 
-import { AlbumCodes, ResponseAlbum } from "../types/album/responseAlbum";
-import { SelectError, SelectErrorCodes } from "../types/errors/select/selectError";
+import { ResponseAlbum } from "../types/album/responseAlbum";
+import { SelectError, SelectErrorCodes, SelectCodes } from "../types/errors/select/selectError";
 
 const router = Router();
 
@@ -16,12 +16,12 @@ router.get("/types", auth, async (req, res) => {
 	console.log("--GET album types");
 	try {
 		const types = await prisma.album_type.findMany();
-		res.status(AlbumCodes.Success).json({
+		res.status(SelectCodes.Success).json({
 			message: "success",
 			types
 		});
 	} catch (error) {
-		res.status(AlbumCodes.Failure).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure"
 		})
 	}
@@ -119,14 +119,14 @@ router.post("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(AlbumCodes.Success).json({
+		res.status(SelectCodes.Success).json({
 			message: "success",
 			album
 		});
 	} catch (error) {
 		console.error(error)
 		if (error instanceof Prisma.PrismaClientUnknownRequestError) {
-			res.status(AlbumCodes.Failure).json({
+			res.status(SelectCodes.Failure).json({
 				message: "failure",
 				error: error.message
 			})
@@ -177,13 +177,13 @@ router.post("/add-to-disc", auth, async (req, res) => {
 			})
 		};
 
-		res.status(AlbumCodes.Success).json({
+		res.status(SelectCodes.Success).json({
 			message: "success",
 			album
 		});
 	} catch (error) {
 		console.error(error)
-		res.status(AlbumCodes.Failure).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: error
 		})
@@ -209,13 +209,13 @@ router.put("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(AlbumCodes.Success).json({
+		res.status(SelectCodes.Success).json({
 			message: "success",
 			album
 		});
 	} catch (error) {
 		console.error(error)
-		res.status(AlbumCodes.Failure).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: "updating error"
 		})
@@ -234,13 +234,13 @@ router.delete("/", auth, async (req, res) => {
 			},
 		});
 
-		res.status(AlbumCodes.Success).json({
+		res.status(SelectCodes.Success).json({
 			message: "success",
 			album
 		});
 	} catch (error) {
 		console.error(error)
-		res.status(AlbumCodes.Failure).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: "deleting error"
 		})
@@ -290,14 +290,14 @@ router.post("/add-genre", auth, async (req, res) => {
 			})
 		};
 
-		res.status(AlbumCodes.Success).json({
+		res.status(SelectCodes.Success).json({
 			message: "success",
 			album
 		});
 	} catch (error) {
 		console.error(error)
 		if (error instanceof Prisma.PrismaClientValidationError) {
-			res.status(AlbumCodes.Failure).json({
+			res.status(SelectCodes.Failure).json({
 				message: "failure",
 				error: error
 			})
