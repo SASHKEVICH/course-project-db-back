@@ -1,31 +1,22 @@
 import { Router } from "express";
-import { Prisma } from "@prisma/client";
+import { album, genre, member } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
-import selectInfo from "../helpers/selectInfo";
+import { selectMany, selectOne } from "../helpers/selectInfo";
 import prisma from "../database/prisma";
 import auth from "../middleware/auth";
 
+import { ResponseBand } from "../types/band/responseBand";
+import sendError from "../helpers/sendError";
+import { SelectCodes, SelectError } from "../types/errors/select/selectError";
+import { SelectErrorCodes } from "../types/errors/select/selectError";
+import { BackendError } from "../types/errors/backendError";
+
 const router = Router();
 
-/* GET band's title and id */
-router.get("/short", auth, async (req, res) => {
-	console.log("--GET band's title and id");
-	const bands = await prisma.band.findMany({
-		select: {
-			band_id: true,
-			title: true,
-		}
-	});
-	res.status(200).json({
-		message: "success",
-		bands
-	});
-});
-
 /* GET band by id */
-router.get("/:id", async (req, res) => {
+router.get("/one/:id", async (req, res) => {
 	const id = req.params.id;
-	const sqlQuery = `
+	const selectBand = `
 		SELECT 
 			band_id, 
 			title, 
@@ -39,102 +30,92 @@ router.get("/:id", async (req, res) => {
 		WHERE band_id = $1
 	`;
 
-	const selectDiscography = `
+	const selectAlbums = `
 		SELECT 
-			album.album_id, 
-			album.title AS title, 
-			album.album_cover_path AS cover 
-		FROM band
-		LEFT JOIN "album/band" alband ON alband.band_id = band.band_id
-		LEFT JOIN album ON album.album_id = alband.album_id
-		LEFT JOIN album_type ON album.type = album_type.album_type_id
+			album.album_id,
+			album.title,
+			album_cover_path
+		FROM album
+		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
+		LEFT JOIN band ON band.band_id = alband.band_id
 		WHERE band.band_id = $1
 		ORDER BY album.released DESC
 	`;
 
 	const selectGenres = `
-		SELECT genre.name AS genre
-		FROM band
-		LEFT JOIN "genre/band" bandgenre ON bandgenre.band_id = band.band_id
-		LEFT JOIN genre ON genre.genre_id = bandgenre.genre_id
+		SELECT 
+			genre.genre_id,
+			name
+		FROM genre
+		LEFT JOIN "genre/band" bandgenre ON bandgenre.genre_id = genre.genre_id
+		LEFT JOIN band ON band.band_id = bandgenre.band_id
 		WHERE band.band_id = $1
 	`;
 
 	const selectMembers = `
-		SELECT public.member.member_id AS id, public.member.name AS name
-		FROM band
-		LEFT JOIN "member/band" memband ON memband.band_id = band.band_id
-		LEFT JOIN public.member ON public.member.member_id = memband.member_id
-		WHERE band.band_id = $1 AND memband.previous = $2
-		ORDER BY id ASC
-	`
-
-	const band = await selectInfo(sqlQuery, [id]);
-	const albums = await selectInfo(selectDiscography, [id]);
-	const genres = await selectInfo(selectGenres, [id]);
-	const currentMembers = await selectInfo(selectMembers, [id, false]);
-	const previousMembers = await selectInfo(selectMembers, [id, true]);
-
-	const genresArray: String[] = []
-	genres.info?.forEach((elem) => {genresArray.push(elem['genre'])})
-
-	const info = band.info?.pop();
-	const mergedBand = {
-		...info,
-		albums: albums.info,
-		genres: genresArray,
-		currentMembers: currentMembers.info,
-		previousMembers: previousMembers.info
-	};
-
-	// @ts-ignore
-	band.info = mergedBand
-	sendResult(res, band);
-});
-
-/* GET band's history by id */
-router.get("/:id/history", async (req, res) => {
-	const id = req.params.id;
-	const sqlQuery = `
-		SELECT history
-		FROM band
-		WHERE band_id = $1
-	`;
-
-	const history = await selectInfo(sqlQuery, [id]);
-	sendResult(res, history);
-});
-
-/* GET band's discography by id */
-router.get("/:id/discography", async (req, res) => {
-	const id = req.params.id;
-	const sqlQuery = `
-		SELECT album.title AS album, album.released AS released, album_type.type AS album_type 
-		FROM band
-		LEFT JOIN "album/band" alband ON alband.band_id = band.band_id
-		LEFT JOIN album ON album.album_id = alband.album_id
-		LEFT JOIN album_type ON album.type = album_type.album_type_id
+		SELECT 
+			member.member_id, 
+			name
+		FROM member
+		LEFT JOIN "member/band" memband ON memband.member_id = member.member_id
+		LEFT JOIN band ON band.band_id = memband.band_id
 		WHERE band.band_id = $1
-		ORDER BY alband.order ASC
 	`;
 
-	const discography = await selectInfo(sqlQuery, [id]);
-	sendResult(res, discography);
+	try {
+		let band: ResponseBand
+		try {
+			band = await selectOne<ResponseBand>(selectBand, [id]);
+		} catch (error) {
+			throw new SelectError("Band not found", SelectErrorCodes.notFoundBand);
+		}
+		
+		const albums = await selectMany<album>(selectAlbums, [id]);
+		const genres = await selectMany<genre>(selectGenres, [id]);
+		const members = await selectMany<member>(selectMembers, [id]);
+
+		band.albums = albums;
+		band.genres = genres;
+		band.members = members;
+
+		sendResult(res, band);
+	} catch (error) {
+		sendError(res, error as BackendError);
+		console.error(error)
+	}
 });
 
 /* BELOW USES TOKENS */
+
+/* GET band's title and id */
+router.get("/short", auth, async (req, res) => {
+	console.log("--GET band's title and id");
+	const bands = await prisma.band.findMany({
+		select: {
+			band_id: true,
+			title: true,
+		}
+	});
+
+	sendResult(res, bands);
+});
 
 /* GET all bands */
 router.get("/", auth, async (req, res) => {
 	console.log("--GET all bands");
 	const sqlQuery = `
-		SELECT band.*, genre.name AS genre
+		SELECT 
+			band.*,
+			json_agg(json_build_object(
+				'genre_id', genre.genre_id,
+				'genre', genre.name
+			)) AS genres
 		FROM band
 		LEFT JOIN "genre/band" bdgenre ON bdgenre.band_id = band.band_id
 		LEFT JOIN genre ON genre.genre_id = bdgenre.genre_id
 	`;
 
-	const bands = await selectInfo(sqlQuery, [""]);
+	const bands = await selectMany<ResponseBand>(sqlQuery);
 	sendResult(res, bands);
 });
 
@@ -181,13 +162,10 @@ router.post("/add-genre", auth, async (req, res) => {
 			})
 		};
 
-		res.status(201).json({
-			message: "success",
-			band
-		});
+		sendResult(res, band);
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: error
 		})
@@ -211,13 +189,10 @@ router.post("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(201).json({
-			message: "success",
-			band
-		});
+		sendResult(res, band);
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: "create error"
 		})
@@ -244,13 +219,10 @@ router.put("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(201).json({
-			message: "success",
-			band
-		});
+		sendResult(res, band);
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: "updating error"
 		})
@@ -269,13 +241,10 @@ router.delete("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(201).json({
-			message: "success",
-			band
-		});
+		sendResult(res, band);
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: "deleting error"
 		})
