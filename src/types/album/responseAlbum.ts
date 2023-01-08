@@ -7,5 +7,5 @@ export enum AlbumCodes {
 
 export type ResponseAlbum = {
 	band: string;
-	genres: genre[];
+	genres?: genre[];
 } & album;
