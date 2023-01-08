@@ -8,6 +8,11 @@ export enum SelectErrorCodes {
 	notFoundMember = 464,
 }
 
+export enum SelectCodes {
+	Success = 200,
+	Failure = 400
+}
+
 export class SelectError extends BackendError {
 	message: string;
 	code: SelectErrorCodes;

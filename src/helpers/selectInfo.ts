@@ -11,8 +11,8 @@ export async function selectOne<T>(sqlQuery: string, params: Array<any>): Promis
 	} catch (err)
 	{
 		const error = err as Error;
-		console.log(error.message)
-		throw new Error(error.message);
+		console.error(error.message)
+		throw error;
 	}
 };
 
@@ -20,11 +20,11 @@ export async function selectMany<T>(sqlQuery: string, params: Array<any> = [""])
 	try {
 		const info: Array<T> = await db.any(sqlQuery, params);
 		return info;
-	} catch (err: any)
+	} catch (err)
 	{
 		const error = err as Error;
-		console.log(error.message)
-		throw new Error(error.message);
+		console.error(error.message)
+		throw error;
 	}
 };
 
