@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { Prisma } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import sendError from "../helpers/sendError";
 import { selectMany } from "../helpers/selectInfo";

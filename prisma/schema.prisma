@@ -106,9 +106,9 @@ model member {
 model member_band {
   band_id   Int
   member_id Int
-  previous  Boolean?
-  band      band?    @relation(fields: [band_id], references: [band_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_band_id")
-  member    member?  @relation(fields: [member_id], references: [member_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_member_id")
+  previous  Boolean @default(false)
+  band      band?   @relation(fields: [band_id], references: [band_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_band_id")
+  member    member? @relation(fields: [member_id], references: [member_id], onDelete: Cascade, onUpdate: Cascade, map: "fk_member_id")
 
   @@id([band_id, member_id])
   @@map("member/band")
