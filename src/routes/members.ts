@@ -1,95 +1,51 @@
 import { Router } from "express";
-import { Prisma } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
-import selectInfo from "../helpers/selectInfo";
+import sendError from "../helpers/sendError";
+import { selectOne, selectMany } from "../helpers/selectInfo";
 import auth from "../middleware/auth";
 import prisma from "../database/prisma";
 
+import { ResponseMember } from "../types/member/responseMember";
+import { SelectCodes, SelectError, SelectErrorCodes } from "../types/errors/select/selectError";
+import { BackendError } from "../types/errors/backendError";
+
 const router = Router();
 
-/* GET all members of band */
-router.get("/band=:id", async (req, res, next) => {
-	const bandId = req.params.id;
-	const sqlQuery = `
-		SELECT public.member.member_id AS id, public.member.name AS name
-		FROM band
-		LEFT JOIN "member/band" memband ON memband.band_id = band.band_id
-		LEFT JOIN public.member ON public.member.member_id = memband.member_id
-		WHERE band.band_id = $1
-		ORDER BY id ASC
-	`;
-
-	const members = await selectInfo(sqlQuery, [bandId]);
-	sendResult(res, members);
-});
-
-/* GET current members of band */
-router.get("/band=:id/current", async (req, res, next) => {
-	const bandId = req.params.id;
-	const sqlQuery = `
-		SELECT public.member.member_id AS id, public.member.name AS name
-		FROM band
-		LEFT JOIN "member/band" memband ON memband.band_id = band.band_id
-		LEFT JOIN public.member ON public.member.member_id = memband.member_id
-		WHERE band.band_id = $1 AND memband.previous = false
-		ORDER BY id ASC
-	`;
-
-	const members = await selectInfo(sqlQuery, [bandId]);
-	sendResult(res, members);
-});
-
 /* GET member's info */
-router.get("/:id", async (req, res, next) => {
+router.get("/one/:id", async (req, res, next) => {
+	console.log("--GET member's info")
 	const memberId = req.params.id;
-	const sqlQuery = `
+	const selectMember = `
 		SELECT 
-			member_id AS id,
-			name AS name,
-			photo_path,
-			to_char(birth_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS bdate,
-			to_char(die_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS ddate,
-			origin_city AS origin,
-			biography
+			member.member_id,
+			name,
+			member.photo_path,
+			to_char(birth_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS birth_date,
+			to_char(die_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS die_date,
+			member.origin_city,
+			biography,
+			json_agg(json_build_object(
+				'band_id', band.band_id,
+				'title', band.title
+			)) AS currentBands
 		FROM member
-		WHERE member_id = $1
-	`;
-
-	const selectCurrentBands = `
-		SELECT band.band_id AS band_id, band.title AS title
-		FROM band
-		LEFT JOIN "member/band" memband ON memband.band_id = band.band_id
-		LEFT JOIN member ON member.member_id = memband.member_id
+		LEFT JOIN "member/band" memband ON memband.member_id = member.member_id
+		LEFT JOIN band ON band.band_id = memband.band_id
 		WHERE member.member_id = $1 AND memband.previous = false
-		ORDER BY id ASC
+		GROUP BY member.member_id
 	`;
-
-	const member = await selectInfo(sqlQuery, [memberId]);
-	const currentBands = await selectInfo(selectCurrentBands, [memberId]);
-
-	// @ts-ignore
-	const info = member.info[0]
-	const mergedMember = {
-		...info,
-		currentBands: currentBands.info
-	};
-
-	// @ts-ignore
-	member.info = mergedMember;
-	sendResult(res, member);
-});
-
-/* GET member's biography */
-router.get("/:id/bio", async (req, res, next) => {
-	const memberId = req.params.id;
-	const sqlQuery = `
-		SELECT public.member.biography AS bio
-		FROM public.member
-		WHERE public.member.member_id = $1
-	`;
-
-	const member = await selectInfo(sqlQuery, [memberId]);
-	sendResult(res, member);
+	
+	try {
+		try {
+			const member = await selectOne<ResponseMember>(selectMember, [memberId]);
+			sendResult(res, member);
+		} catch (e) {
+			throw new SelectError("Member not found", SelectErrorCodes.notFoundMember);
+		}
+	} catch (error) {
+		console.error(error);
+		sendError(res, error as BackendError);
+	}
 });
 
 /* BELOW USES TOKENS */
@@ -97,15 +53,36 @@ router.get("/:id/bio", async (req, res, next) => {
 /* GET all members */
 router.get("/", auth, async (req, res) => {
 	console.log("--GET all members")
-	let sqlQuery = `
-		SELECT member.*, band.title AS band
+	let selectMembers = `
+		SELECT 
+			member.member_id,
+			name,
+			member.photo_path,
+			to_char(birth_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS birth_date,
+			to_char(die_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS die_date,
+			member.origin_city,
+			biography,
+			json_agg(json_build_object(
+				'band_id', band.band_id,
+				'title', band.title
+			)) AS bands
 		FROM member
 		LEFT JOIN "member/band" memband ON memband.member_id = member.member_id
 		LEFT JOIN band ON band.band_id = memband.band_id
+		GROUP BY member.member_id
 	`;
 
-	const albums = await selectInfo(sqlQuery, [""]);
-	sendResult(res, albums);
+	try {
+		try {
+			const members = await selectMany<ResponseMember>(selectMembers);
+			sendResult(res, members);
+		} catch (error) {
+			throw new SelectError('No members found', SelectErrorCodes.notFoundMember);
+		}
+	} catch (error) {
+		console.error(error);
+		sendError(res, error as BackendError);
+	}
 });
 
 /* ADD member to band */
@@ -153,19 +130,13 @@ router.post("/add-to-band", auth, async (req, res) => {
 			})
 		};
 
-		res.status(201).json({
-			message: "success",
-			member
-		});
+		sendResult(res, member);
 	} catch (error) {
 		console.error(error)
-		if (error instanceof Prisma.PrismaClientValidationError) {
-			console.log(error.message)
-			res.status(400).json({
-				message: "failure",
-				error: error
-			})
-    };
+		res.status(SelectCodes.Failure).json({
+			message: "failure",
+			error: error
+		})
 	}
 });
 
@@ -185,13 +156,10 @@ router.post("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(201).json({
-			message: "success",
-			member
-		});
+		sendResult(res, member);
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: "create error"
 		})
@@ -217,13 +185,10 @@ router.put("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(201).json({
-			message: "success",
-			member
-		});
+		sendResult(res, member);
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: "updating error"
 		})
@@ -241,13 +206,10 @@ router.delete("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(201).json({
-			message: "success",
-			member
-		});
+		sendResult(res, member);
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: "deleting error"
 		})
