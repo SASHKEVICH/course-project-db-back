@@ -28,7 +28,7 @@ app.use("/login", loginRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req: Request, res: Response, next) {
-	next();
+	res.status(404).send("Incorrect route");
 });
 
 // error handler
