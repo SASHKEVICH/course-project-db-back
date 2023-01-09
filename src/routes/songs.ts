@@ -7,7 +7,7 @@ import prisma from "../database/prisma";
 import auth from "../middleware/auth"
 
 import { ResponseSong } from "../types/song/responseSong";
-import { SelectError, SelectErrorCodes } from "../types/errors/select/selectError";
+import { SelectCodes, SelectError, SelectErrorCodes } from "../types/errors/select/selectError";
 
 const router = Router();
 
@@ -67,7 +67,7 @@ router.get("/", auth, async (req, res) => {
 
 	try {
 		try {
-			const songs = await selectMany<ResponseSong>(selectSongsQuery, [""]);
+			const songs = await selectMany<ResponseSong>(selectSongsQuery);
 			sendResult(res, songs);
 		} catch (e) {
 			throw new SelectError("No songs found", SelectErrorCodes.notFoundSong);
@@ -123,18 +123,13 @@ router.post("/add-to-album", auth, async (req, res) => {
 			})
 		};
 
-		res.status(201).json({
-			message: "success",
-			song
-		});
+		sendResult(res, song);
 	} catch (error) {
 		console.error(error)
-		if (error instanceof Prisma.PrismaClientValidationError) {
-			res.status(400).json({
-				message: "failure",
-				error: error
-			})
-    };
+		res.status(SelectCodes.Failure).json({
+			message: "failure",
+			error: "adding to album error"
+		})
 	}
 });
 
@@ -151,13 +146,10 @@ router.post("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(201).json({
-			message: "success",
-			song
-		});
+		sendResult(res, song);
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: "creating error"
 		})
@@ -180,13 +172,10 @@ router.put("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(201).json({
-			message: "success",
-			song
-		});
+		sendResult(res, song);
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: "updating error"
 		})
@@ -204,13 +193,10 @@ router.delete("/", auth, async (req, res) => {
 			}
 		});
 
-		res.status(201).json({
-			message: "success",
-			song
-		});
+		sendResult(res, song);
 	} catch (error) {
 		console.error(error)
-		res.status(400).json({
+		res.status(SelectCodes.Failure).json({
 			message: "failure",
 			error: "deleting error"
 		})
