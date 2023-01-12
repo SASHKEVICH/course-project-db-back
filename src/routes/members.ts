@@ -27,7 +27,7 @@ router.get("/one/:id", async (req, res, next) => {
 			json_agg(json_build_object(
 				'band_id', band.band_id,
 				'title', band.title
-			)) AS currentBands
+			)) AS current_bands
 		FROM member
 		LEFT JOIN "member/band" memband ON memband.member_id = member.member_id
 		LEFT JOIN band ON band.band_id = memband.band_id

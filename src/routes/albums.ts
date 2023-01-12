@@ -12,7 +12,7 @@ import { SelectError, SelectErrorCodes, SelectCodes } from "../types/errors/sele
 const router = Router();
 
 /* GET types */
-router.get("/types", auth, async (req, res) => { 
+router.get("/types", auth, async (_, res) => {
 	console.log("--GET album types");
 	try {
 		const types = await prisma.album_type.findMany();
@@ -33,8 +33,8 @@ router.get("/one/:id", async (req, res, next) => {
 	const selectAlbum = `
 		SELECT 
 			album.album_id,
-			album.title AS title,
-			album.album_cover_path AS cover,
+			album.title,
+			album.album_cover_path,
 			to_char(album.released, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS released,
 			album.explicit AS explicit,
 			album.history AS history,
@@ -64,13 +64,13 @@ router.get("/one/:id", async (req, res, next) => {
 	} catch (error) {
 		sendError(res, error as SelectError);
 		console.error(error)
-	}	
+	}
 });
 
 /* BELOW USES TOKENS */
 
 /* GET all albums */
-router.get("/all", auth, async (req, res, next) => {
+router.get("/all", auth, async (_, res, next) => {
 	console.log("--GET all albums")
 	const selectAlbums = `
 		SELECT 
@@ -100,7 +100,7 @@ router.get("/all", auth, async (req, res, next) => {
 	} catch (error) {
 		sendError(res, error as SelectError);
 		console.error(error);
-	}	
+	}
 });
 
 /* CREATE album */
@@ -130,7 +130,7 @@ router.post("/", auth, async (req, res) => {
 				message: "failure",
 				error: error.message
 			})
-    };
+		};
 	}
 });
 
@@ -301,7 +301,7 @@ router.post("/add-genre", auth, async (req, res) => {
 				message: "failure",
 				error: error
 			})
-    };
+		};
 	}
 });
 

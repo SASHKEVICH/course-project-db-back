@@ -22,7 +22,8 @@ router.get("/albumId=:album_id", async (req, res) => {
 			song.explicit,
 			json_agg(json_build_object(
 				'album_id', album.album_id,
-				'title', album.title
+				'title', album.title,
+				'album_cover_path', album.album_cover_path
 			)) as album
 		FROM album
 		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id

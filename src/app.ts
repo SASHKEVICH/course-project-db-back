@@ -25,12 +25,12 @@ app.use("/registration", registrationRouter);
 app.use("/login", loginRouter);
 
 // catch 404 and forward to error handler
-app.use(function (req: Request, res: Response, next) {
+app.use(function(req: Request, res: Response, next) {
 	res.status(404).send("Incorrect route");
 });
 
 // error handler
-app.use(function (err: any, req: Request, res: Response) {
+app.use(function(err: any, req: Request, res: Response) {
 	// set locals, only providing error in development
 	res.locals.message = err.message;
 	res.locals.error = req.app.get("env") === "development" ? err : {};
@@ -43,3 +43,4 @@ app.use(function (err: any, req: Request, res: Response) {
 app.listen(port, () => {
 	console.log(`App listening on port ${port}`);
 });
+

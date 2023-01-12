@@ -19,8 +19,8 @@ router.get('/:request', async (req, res) => {
 	const searchInAlbums = `
 		SELECT 
 			album.album_id, 
-			album.album_cover_path AS cover,
-			album.title as title, 
+			album.album_cover_path,
+			album.title, 
 			album.explicit,
 			json_agg(json_build_object(
 				'band_id', band.band_id,
