@@ -30,6 +30,7 @@ router.get("/types", auth, async (_, res) => {
 /* GET album by id */
 router.get("/one/:id", async (req, res, next) => {
 	const id = req.params.id;
+	console.log(`--GET one album by id: ${id}`);
 	const selectAlbum = `
 		SELECT 
 			album.album_id,

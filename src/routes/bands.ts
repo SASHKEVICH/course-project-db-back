@@ -16,6 +16,7 @@ const router = Router();
 /* GET band by id */
 router.get("/one/:id", async (req, res) => {
 	const id = req.params.id;
+	console.log(`--GET one band by id:${id}`);
 	const selectBand = `
 		SELECT 
 			band_id, 

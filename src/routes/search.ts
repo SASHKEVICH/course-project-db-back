@@ -15,6 +15,7 @@ type SearchResponse = {
 };
 
 router.get('/:request', async (req, res) => {
+	console.log("--GET search");
 	const request: string = req.params.request.replace(/-/g, " ");
 	const searchInAlbums = `
 		SELECT 
