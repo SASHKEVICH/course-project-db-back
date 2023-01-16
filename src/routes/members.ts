@@ -24,10 +24,10 @@ router.get("/one/:id", async (req, res, next) => {
 			to_char(die_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS die_date,
 			member.origin_city,
 			biography,
-			json_agg(json_build_object(
+			coalesce(json_agg(json_build_object(
 				'band_id', band.band_id,
 				'title', band.title
-			)) AS current_bands
+			)) FILTER (WHERE band.band_idd IS NOT NULL), '[]'::json) AS current_bands
 		FROM member
 		LEFT JOIN "member/band" memband ON memband.member_id = member.member_id
 		LEFT JOIN band ON band.band_id = memband.band_id
@@ -62,10 +62,10 @@ router.get("/", auth, async (req, res) => {
 			to_char(die_date, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS die_date,
 			member.origin_city,
 			biography,
-			json_agg(json_build_object(
+			coalesce(json_agg(json_build_object(
 				'band_id', band.band_id,
 				'title', band.title
-			)) AS bands
+			)) FILTER (WHERE band.band_idd IS NOT NULL), '[]'::json) AS bands
 		FROM member
 		LEFT JOIN "member/band" memband ON memband.member_id = member.member_id
 		LEFT JOIN band ON band.band_id = memband.band_id

@@ -20,11 +20,11 @@ router.get("/albumId=:album_id", async (req, res) => {
 			song.duration,
 			song.title AS title,
 			song.explicit,
-			json_agg(json_build_object(
+			coalesce(json_agg(json_build_object(
 				'album_id', album.album_id,
 				'title', album.title,
 				'album_cover_path', album.album_cover_path
-			)) as album
+			)) FILTER (WHERE album.album_id IS NOT NULL), '[]'::json) AS album
 		FROM album
 		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
 		LEFT JOIN song ON song.song_id = alsong.song_id

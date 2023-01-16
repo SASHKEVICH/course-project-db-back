@@ -107,10 +107,10 @@ router.get("/", auth, async (req, res) => {
 	const sqlQuery = `
 		SELECT 
 			band.*,
-			json_agg(json_build_object(
+			coalesce(json_agg(json_build_object(
 				'genre_id', genre.genre_id,
-				'genre', genre.name
-			)) AS genres
+				'name', genre.name
+			)) FILTER (WHERE genre.genre_id IS NOT NULL), '[]'::json) AS genres
 		FROM band
 		LEFT JOIN "genre/band" bdgenre ON bdgenre.band_id = band.band_id
 		LEFT JOIN genre ON genre.genre_id = bdgenre.genre_id

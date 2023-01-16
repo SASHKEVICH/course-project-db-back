@@ -1,6 +1,7 @@
-import { album, genre } from "@prisma/client";
+import { album, genre, song, band } from "@prisma/client";
 
 export type ResponseAlbum = {
-	band: string;
+	band: band[];
 	genres?: genre[];
+	songs?: song[];
 } & album;

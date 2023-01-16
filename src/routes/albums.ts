@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Prisma } from "@prisma/client";
+import { Prisma, band } from "@prisma/client";
 import sendResult from "../helpers/sendResult";
 import sendError from "../helpers/sendError";
 import { selectMany, selectOne } from "../helpers/selectInfo";
@@ -41,23 +41,39 @@ router.get("/one/:id", async (req, res, next) => {
 			album.history AS history,
 			album_type.type AS type,
 			band.title AS band,
-			json_agg(json_build_object(
+			coalesce(json_agg(json_build_object(
 				'genre_id', genre.genre_id,
-				'genre', genre.name
-			)) as genres
+				'name', genre.name
+			)) FILTER (WHERE genre.genre_id IS NOT NULL), '[]'::json) AS genres,
+			coalesce(json_agg(song.*) 
+			FILTER (WHERE song.song_id IS NOT NULL), '[]'::json) AS songs
 		FROM album
 		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
 		LEFT JOIN band ON band.band_id = alband.band_id
 		LEFT JOIN album_type ON album_type.album_type_id = album.type
 		LEFT JOIN "genre/album" genalbum ON genalbum.album_id = album.album_id
 		LEFT JOIN genre ON genre.genre_id = genalbum.genre_id
+		LEFT JOIN "album/song" alsong ON alsong.album_id = album.album_id
+		LEFT JOIN song ON song.song_id = alsong.song_id
 		WHERE album.album_id = $1
-		GROUP BY album.album_id, band.title, album_type.type
+		GROUP BY album.album_id, band.band_id, album_type.type
+	`;
+
+	const selectBand = `
+		SELECT
+			band.band_id,
+			band.title
+		FROM band
+		LEFT JOIN "album/band" alband ON alband.band_id = band.band_id
+		LEFT JOIN album ON album.album_id = alband.album_id
+		WHERE album.album_id = $1
 	`;
 
 	try {
 		try {
+			const band: band[] = await selectMany<band>(selectBand, [id]);
 			const responseAlbum: ResponseAlbum = await selectOne<ResponseAlbum>(selectAlbum, [id]);
+			responseAlbum.band = band;
 			sendResult(res, responseAlbum);
 		} catch (e) {
 			throw new SelectError("Album not found", SelectErrorCodes.notFoundAlbum);
@@ -78,10 +94,10 @@ router.get("/all", auth, async (_, res, next) => {
 			album.*, 
 			band.title AS band, 
 			album_type.type AS type, 
-			json_agg(json_build_object(
+			coalesce(json_agg(json_build_object(
 				'genre_id', genre.genre_id,
-				'genre', genre.name
-			)) as genres
+				'name', genre.name
+			)) FILTER (WHERE genre.genre_id IS NOT NULL), '[]'::json) AS genres
 		FROM album
 		LEFT JOIN "album/band" alband ON alband.album_id = album.album_id
 		LEFT JOIN "genre/album" genalbum ON genalbum.album_id = album.album_id
