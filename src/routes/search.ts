@@ -62,7 +62,7 @@ router.get('/:request', async (req, res) => {
 	const membersRequest = request.replace(/ /g, "|");
 	const searchInMembers = `
 		SELECT 
-			member_id AS id, 
+			member_id, 
 			name, 
 			photo_path FROM member
 		WHERE lower(name COLLATE "en_US") ~ '${membersRequest}';
