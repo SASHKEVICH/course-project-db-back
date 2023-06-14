@@ -1,1 +1,9 @@
-/node_modules
+node_modules
+
+.git
+.github
+
+.editorconfig
+
+docker-compose.yml
+docker-compose.prod.yml
