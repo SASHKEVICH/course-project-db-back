@@ -6,20 +6,28 @@ ARG NODE_VERSION="19"
 FROM node:${NODE_VERSION}-slim AS base
 WORKDIR /opt/app
 
-COPY package*.json ./
-
 RUN apt-get update && apt-get install -y \
 	  openssl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install
-RUN npm rebuild bcrypt
-
 COPY . .
 
-RUN npx prisma generate 
+
+FROM base AS dev
+
+RUN npm install &&
+		npm rebuild brcypt
+
+ENTRYPOINT ["npm", "run"]
+
 
 FROM base AS prod
 
-RUN npm run build
+RUN npm ci --production &&
+		npm rebuild bcrypt
+
+RUN npx prisma generate
+
+RUN npm run build &&
+		npm run start
 
